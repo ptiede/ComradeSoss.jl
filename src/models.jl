@@ -68,6 +68,66 @@ mringVM2wf = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3
     end
 end
 
+mttest = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(0.0, 2π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+    #Second mring mode
+    ma2 ~ Dists.Uniform(0.0,0.5)
+    mp2 ~ Dists.Uniform(0.0, 2π)
+    α2 = ma2*cos(mp2)
+    β2 = ma2*sin(mp2)
+
+
+    #Total flux
+    f ~ Dists.Uniform(0.8, 1.0)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+
+    #Gain amps
+    AP ~ Dists.LogNormal(0.0, 0.1)
+    AZ ~ Dists.LogNormal(0.0, 0.1)
+    JC ~ Dists.LogNormal(0.0, 0.1)
+    SM ~ Dists.LogNormal(0.0, 0.1)
+    AA ~ Dists.LogNormal(0.0, 0.1)
+    LM ~ Dists.LogNormal(0.0, 0.2)
+    SP ~ Dists.LogNormal(0.0, 0.1)
+    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP)
+
+
+    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
+    img = renormed(smoothed(mring+disk,σ),f)
+
+    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+        g1 = g[s1[i]]
+        g2 = g[s2[i]]
+        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
+        Dists.Normal(mamp, erramp[i])
+    end
+
+    cphase ~ For(eachindex(u1cp, errcp)) do i
+        mphase = ROSE.closure_phase(img,
+                                    u1cp[i],
+                                    v1cp[i],
+                                    u2cp[i],
+                                    v2cp[i],
+                                    u3cp[i],
+                                    v3cp[i]
+                                )
+        CPNormal(mphase, errcp[i])
+    end
+end
+
 """
     smringVM2wf
 Returns a fiducial mring model with a stretch added
@@ -174,13 +234,13 @@ mringVis2 = @model u, v, s1, s2, err begin
     aSP ~ LogNormal(0.0, 0.1)
     ga = (AP=aAP, AZ=aAZ, JC=aJC, SM=aSM, AA=aAA, LM=aLM, SP=aSP)
 
-    pAP ~ truncated(Normal(0.0, π), -π, π)
-    pAZ ~ truncated(Normal(0.0, π), -π, π)
-    pJC ~ truncated(Normal(0.0, π), -π, π)
-    pSM ~ truncated(Normal(0.0, π), -π, π)
-    pAA ~ truncated(Normal(0.0, π), -π, π)
-    pLM ~ truncated(Normal(0.0, π), -π, π)
-    pSP ~ truncated(Normal(0.0, π), -π, π)
+    pAP ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pAZ ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pJC ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pSM ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pAA ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pLM ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pSP ~ Dists.truncated(Normal(0.0, π), -π, π)
     gp = (AP=pAP, AZ=pAZ, JC=pJC, SM=pSM, AA=pAA, LM=pLM, SP=pSP)
 
 

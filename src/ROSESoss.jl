@@ -1,16 +1,20 @@
 module ROSESoss
 
-using Soss
-using ROSE
+using Reexport
+@reexport using Soss
+@reexport using ROSE
 using PyCall
 using MCMCChains
-using StatsBase
-using BlackBoxOptim
+using StatsBase: sample
+using BlackBoxOptim: bboptimize, best_candidate, best_fitness
 using NestedSamplers
 using Requires
 using StructArrays
 import Distributions as Dists
 using MeasureTheory
+using Random
+
+Base.rand(rng::AbstractRNG, ::Type{Float64}, d::Dists.ContinuousDistribution) = rand(rng, d)
 
 
 const rad2μas = 180.0/π*3600*1e6
@@ -21,7 +25,6 @@ const ehtim  = PyNULL()
 
 export extract_amps, extract_vis, extract_cphase,
        ObsChar, scandata,
-       mringVM2wf, smringVM2wf,
        create_joint,
        dynesty_sampler, nested_sampler, threaded_optimize,
        chi2, plot_mean, plot_samples, plot_vis_comp, plot_amp_comp,
