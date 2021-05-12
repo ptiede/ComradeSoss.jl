@@ -36,7 +36,7 @@ export extract_amps, extract_vis, extract_cphase,
        plot_cp_comp, plot_res_density
 
 
-include("models.jl")
+#include("models.jl")
 include("read_ehtim.jl")
 include("utility.jl")
 include("inference.jl")
