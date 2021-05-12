@@ -1,4 +1,13 @@
+
+module SossModels
+
+#Turn off precompilations because of GG bug https://github.com/cscherrer/Soss.jl/issues/267
+__precompile__(false)
 const fwhmfac = 2*sqrt(2*log(2))
+
+using Soss
+using ROSE
+import Distributions as Dists
 
 
 
@@ -28,7 +37,7 @@ mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
 
 
     #Total flux
-    f ~ Dists.Uniform(0.8, 1.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
@@ -44,9 +53,9 @@ mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
     g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP)
 
 
-    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    mring = renormed(ROSE.MRing(rad, (α1,α2), (β1,β2)), f-floor)
     disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
-    img = renormed(smoothed(mring+disk,σ),f)
+    img = smoothed(mring+disk,σ)
 
     amp ~ For(eachindex(uamp,vamp, erramp)) do i
         g1 = g[s1[i]]
@@ -99,7 +108,7 @@ smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
 
 
     #Total flux
-    f ~ Dists.Uniform(0.8, 1.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
@@ -115,9 +124,9 @@ smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
     g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP)
 
 
-    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    mring = renormed(ROSE.MRing(rad, (α1,α2), (β1,β2)), f-floor)
     disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
-    img = renormed(smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ),f)
+    img = smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ)
 
     amp ~ For(eachindex(uamp,vamp, erramp)) do i
         g1 = g[s1[i]]
@@ -140,6 +149,11 @@ smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
 end
 
 
+"""
+    mring2wfVis
+Returns a fiducial mring model that is fit to complex vis including
+constant gain amps, and gain phases.
+"""
 
 mring2wfVis = @model u, v, s1, s2, err begin
     diam ~ Dists.Uniform(25.0, 75.0)
@@ -161,33 +175,33 @@ mring2wfVis = @model u, v, s1, s2, err begin
 
 
     #Total flux
-    f ~ Dists.Uniform(0.8, 1.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
 
-    aAP ~ LogNormal(0.0, 0.1)
-    aAZ ~ LogNormal(0.0, 0.1)
-    aJC ~ LogNormal(0.0, 0.1)
-    aSM ~ LogNormal(0.0, 0.1)
-    aAA ~ LogNormal(0.0, 0.1)
-    aLM ~ LogNormal(0.0, 0.2)
-    aSP ~ LogNormal(0.0, 0.1)
+    aAP ~ Dists.LogNormal(0.0, 0.1)
+    aAZ ~ Dists.LogNormal(0.0, 0.1)
+    aJC ~ Dists.LogNormal(0.0, 0.1)
+    aSM ~ Dists.LogNormal(0.0, 0.1)
+    aAA ~ Dists.LogNormal(0.0, 0.1)
+    aLM ~ Dists.LogNormal(0.0, 0.2)
+    aSP ~ Dists.LogNormal(0.0, 0.1)
     ga = (AP=aAP, AZ=aAZ, JC=aJC, SM=aSM, AA=aAA, LM=aLM, SP=aSP)
 
-    pAP ~ Dists.truncated(Normal(0.0, π), -π, π)
-    pAZ ~ Dists.truncated(Normal(0.0, π), -π, π)
-    pJC ~ Dists.truncated(Normal(0.0, π), -π, π)
-    pSM ~ Dists.truncated(Normal(0.0, π), -π, π)
-    pAA ~ Dists.truncated(Normal(0.0, π), -π, π)
-    pLM ~ Dists.truncated(Normal(0.0, π), -π, π)
-    pSP ~ Dists.truncated(Normal(0.0, π), -π, π)
+    pAP ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
+    pAZ ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
+    pJC ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
+    pSM ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
+    pAA ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
+    pLM ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
+    pSP ~ Dists.truncated(Dists.Normal(0.0, π), -π, π)
     gp = (AP=pAP, AZ=pAZ, JC=pJC, SM=pSM, AA=pAA, LM=pLM, SP=pSP)
 
 
-    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    mring = renormed(ROSE.MRing(rad, (α1,α2), (β1,β2)), f-floor)
     disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
-    img = renormed(smoothed(mring+disk,σ),f)
+    img = smoothed(mring+disk,σ)
     vis = visibility.(Ref(img), u, v)
 
     visr ~ For(eachindex(u, v)) do i
@@ -196,7 +210,7 @@ mring2wfVis = @model u, v, s1, s2, err begin
         g1 = ga[s1[i]]
         g2 = ga[s2[i]]
         mamp = g1*g2*(real(vis[i])*c + imag(vis[i])*s)
-        Normal(mamp, err[i])
+        Dists.Normal(mamp, err[i])
     end
 
     visi ~ For(eachindex(u, v)) do i
@@ -205,41 +219,10 @@ mring2wfVis = @model u, v, s1, s2, err begin
         g1 = ga[s1[i]]
         g2 = ga[s2[i]]
         mamp = g1*g2*(-real(vis[i])*s + imag(vis[i])*c)
-        Normal(mamp, err[i])
+        Dists.Normal(mamp, err[i])
     end
 end
 
-test = @model begin
-    diam ~ Dists.Uniform(25.0, 75.0)
-    fwhm ~ Dists.Uniform(1.0, 40.0)
-    rad = diam/2
-    σ = fwhm/fwhmfac
-
-    #First mring mode
-    ma1 ~ Dists.Uniform(0.0,0.5)
-    mp1 ~ Dists.Uniform(0.0, 2π)
-    α1 = ma1*cos(mp1)
-    β1 = ma1*sin(mp1)
-
-    #Second mring mode
-    ma2 ~ Dists.Uniform(0.0,0.5)
-    mp2 ~ Dists.Uniform(0.0, 2π)
-    α2 = ma2*cos(mp2)
-    β2 = ma2*sin(mp2)
-
-
-    #Total flux
-    f ~ Dists.Uniform(0.8, 1.0)
-
-    #Fraction of floor flux
-    floor ~ Dists.Uniform(0.0, 1.0)
-
-
-    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
-    disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
-    img = renormed(smoothed(mring+disk,σ),f)
-    return img
-end
 
 
 mring2wfVA = @model u, v, s1, s2, err begin
@@ -262,30 +245,34 @@ mring2wfVA = @model u, v, s1, s2, err begin
 
 
     #Total flux
-    f ~ Dists.Uniform(0.8, 1.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
 
-    AP ~ LogNormal(0.0, 0.1)
-    AZ ~ LogNormal(0.0, 0.1)
-    JC ~ LogNormal(0.0, 0.1)
-    SM ~ LogNormal(0.0, 0.1)
-    AA ~ LogNormal(0.0, 0.1)
-    LM ~ LogNormal(0.0, 0.2)
-    SP ~ LogNormal(0.0, 0.1)
-    ga = (AP=aAP, AZ=aAZ, JC=aJC, SM=aSM, AA=aAA, LM=aLM, SP=aSP)
+    AP ~ Dists.LogNormal(0.0, 0.1)
+    AZ ~ Dists.LogNormal(0.0, 0.1)
+    JC ~ Dists.LogNormal(0.0, 0.1)
+    SM ~ Dists.LogNormal(0.0, 0.1)
+    AA ~ Dists.LogNormal(0.0, 0.1)
+    LM ~ Dists.LogNormal(0.0, 0.2)
+    SP ~ Dists.LogNormal(0.0, 0.1)
+    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP)
 
 
-
-    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    #Build the model
+    mring = renormed(ROSE.MRing(rad, (α1,α2), (β1,β2)), f-floor)
     disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
-    img = renormed(smoothed(mring+disk,σ),f)
-    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+    img = smoothed(mring+disk,σ)
+
+    #Observe the model
+    amp ~ For(eachindex(u,v, err)) do i
         g1 = g[s1[i]]
         g2 = g[s2[i]]
-        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
-        Dists.Normal(mamp, erramp[i])
+        mamp = g1*g2*ROSE.visibility_amplitude(img, u[i], v[i])
+        Dists.Normal(mamp, err[i])
     end
 
 end
+
+end #SossModels

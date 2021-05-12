@@ -14,11 +14,11 @@ function ultranest_sampler(lj; kwargs...)
     prtransvec(X) = reduce(vcat, (x -> prt(x)').(eachrow(X)))
 
 
-    function lklhd(x)
-        θ = NamedTuple{pnames, NTuple{length(x),Float64}}(x)
-        var = merge(θ, lj.data)
-        ℓ =  logdensity(lj.model, var) - logdensity(pr, var)
-        return isnan(ℓ) ? -1e10 : ℓ
+    function lklhd(x::Vector{T}) where {T}
+        θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
+        var = merge(θ, gdata(lj))
+        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
+        return convert(T, isnan(ℓ) ? -1e10 : ℓ)
     end
     lklhdvec(X) = lklhd.(eachrow(X))
     vpnames = [String.(pnames)...]

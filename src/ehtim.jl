@@ -12,7 +12,7 @@ end
 function saveobschar(obschar::ObsChar, model, datafile, file)
     open(file, "w") do io
         println(io, "Fitting Datafile: ", datafile)
-        println(io, "Using model: ", model)
+        println(io, "Using model: \n", model)
         println(io, "flag_lsnr = ", obschar.flag_lsnr)
         println(io, "deblur = ", obschar.deblur)
         println(io, "zblscale = ", obschar.zblscale)

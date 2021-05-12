@@ -180,9 +180,9 @@ function nested_sampler(lj;nlive=400, kwargs...)
 
     function lklhd(x::Vector{T}) where {T}
         θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
-        var = merge(θ, lj.data)
-        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
-        return isnan(ℓ) ? -1e10 : ℓ
+        var = merge(θ, gdata(lj))
+        ℓ::T =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
+        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
     end
 
     sampler = Nested(lj.transform.dimension, nlive)
@@ -199,19 +199,19 @@ dynesty on it using the default options and static sampler.
 
 Returns a chain, state
 """
-function dynesty_sampler(lj; kwargs...)
+function dynesty_sampler(lj; progress=true, kwargs...)
     prt, pnames,pr = prior_transform(lj)
 
 
     function lklhd(x::Vector{T}) where {T}
         θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
-        var = merge(θ, lj.data)
+        var = merge(θ, gdata(lj))
         ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
-        return isnan(ℓ) ? -1e10 : ℓ
+        return convert(T, isnan(ℓ) ? -1e10 : ℓ)
     end
 
     sampler =  dynesty.NestedSampler(lklhd, prt, lj.transform.dimension; kwargs...)
-    sampler.run_nested()
+    sampler.run_nested(print_progress=progress)
     res = sampler.results
     samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
     logz = res["logz"][end]
@@ -220,25 +220,4 @@ function dynesty_sampler(lj; kwargs...)
     vals = hcat(samples, weights)
     chain = Chains(vals, [pnames..., :weights], Dict(:internals => ["weights"]),evidence=logz)
     return chain, (logzerr=logzerr, ), pnames
-end
-
-
-"""
-    threaded_optimize
-Runs a optimizer `nopt` times that are split across how many threads are currently running.
-Note this optimizes the unbounded version of the lj
-
-Returns the best parameters and divergences sorted from best to worst fit.
-"""
-function threaded_optimize(nopt, lj, maxevals)
-    results = [zeros(lj.transform.dimension) for _ in 1:nopt]
-    divs = zeros(nopt)
-    srange = [(-5.0,5.0) for i in 1:lj.transform.dimension]
-    for i in 1:nopt
-        res = bboptimize(x->-lj(x), SearchRange=srange, MaxFuncEvals=maxevals, TraceMode=:compact)
-        results[i] = best_candidate(res)
-        divs[i] = -best_fitness(res)
-    end
-    I = sortperm(divs, rev=true)
-    return logj.transform.(results[I]), divs[I]
 end

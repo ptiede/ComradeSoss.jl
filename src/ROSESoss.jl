@@ -6,7 +6,6 @@ using Reexport
 using PyCall
 using MCMCChains
 using StatsBase: sample
-using BlackBoxOptim: bboptimize, best_candidate, best_fitness
 using NestedSamplers
 using Requires
 using StructArrays
@@ -33,13 +32,16 @@ export extract_amps, extract_vis, extract_cphase,
        dynesty_sampler, nested_sampler,
        threaded_optimize,
        chi2, plot_mean, plot_samples, plot_vis_comp, plot_amp_comp,
-       plot_cp_comp, plot_res_density
+       plot_cp_comp, plot_res_density,
+       SossModels,
+       ehtim
 
 
-#include("models.jl")
-include("read_ehtim.jl")
+include("ehtim.jl")
 include("utility.jl")
 include("inference.jl")
+include("models.jl")
+using .SossModels
 
 
 function __init__()
@@ -50,6 +52,7 @@ function __init__()
         @require StatsPlots="f3b207a7-027a-5e70-b257-86293d7955fd" include("plots.jl")
     end
     @require UltraNest="6822f173-b0be-4018-9ee2-28bf56348d09" include("ultranest.jl")
+    @require BlackBoxOptim="a134a8b2-14d6-55f6-9291-3336d3ab0209" include("bboptim.jl")
 end
 
 
