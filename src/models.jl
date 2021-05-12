@@ -3,12 +3,12 @@ const fwhmfac = 2*sqrt(2*log(2))
 
 
 """
-    mringVM2wf
+    mring2wfVACP
 Returns a fiducial mring model. That is, it contains a 2 mode mring model
 with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
-mringVM2wf = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
     diam ~ Dists.Uniform(25.0, 75.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
@@ -68,71 +68,12 @@ mringVM2wf = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3
     end
 end
 
-mttest = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
-    fwhm ~ Dists.Uniform(1.0, 40.0)
-    rad = diam/2
-    σ = fwhm/fwhmfac
-
-    #First mring mode
-    ma1 ~ Dists.Uniform(0.0,0.5)
-    mp1 ~ Dists.Uniform(0.0, 2π)
-    α1 = ma1*cos(mp1)
-    β1 = ma1*sin(mp1)
-
-    #Second mring mode
-    ma2 ~ Dists.Uniform(0.0,0.5)
-    mp2 ~ Dists.Uniform(0.0, 2π)
-    α2 = ma2*cos(mp2)
-    β2 = ma2*sin(mp2)
-
-
-    #Total flux
-    f ~ Dists.Uniform(0.8, 1.0)
-
-    #Fraction of floor flux
-    floor ~ Dists.Uniform(0.0, 1.0)
-
-    #Gain amps
-    AP ~ Dists.LogNormal(0.0, 0.1)
-    AZ ~ Dists.LogNormal(0.0, 0.1)
-    JC ~ Dists.LogNormal(0.0, 0.1)
-    SM ~ Dists.LogNormal(0.0, 0.1)
-    AA ~ Dists.LogNormal(0.0, 0.1)
-    LM ~ Dists.LogNormal(0.0, 0.2)
-    SP ~ Dists.LogNormal(0.0, 0.1)
-    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP)
-
-
-    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
-    disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
-    img = renormed(smoothed(mring+disk,σ),f)
-
-    amp ~ For(eachindex(uamp,vamp, erramp)) do i
-        g1 = g[s1[i]]
-        g2 = g[s2[i]]
-        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
-        Dists.Normal(mamp, erramp[i])
-    end
-
-    cphase ~ For(eachindex(u1cp, errcp)) do i
-        mphase = ROSE.closure_phase(img,
-                                    u1cp[i],
-                                    v1cp[i],
-                                    u2cp[i],
-                                    v2cp[i],
-                                    u3cp[i],
-                                    v3cp[i]
-                                )
-        CPNormal(mphase, errcp[i])
-    end
-end
 
 """
-    smringVM2wf
+    smring2wfVACP
 Returns a fiducial mring model with a stretch added
 """
-smringVM2wf = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
     diam ~ Dists.Uniform(25.0, 75.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
@@ -200,7 +141,7 @@ end
 
 
 
-mringVis2 = @model u, v, s1, s2, err begin
+mring2wfVis = @model u, v, s1, s2, err begin
     diam ~ Dists.Uniform(25.0, 75.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
@@ -266,4 +207,85 @@ mringVis2 = @model u, v, s1, s2, err begin
         mamp = g1*g2*(-real(vis[i])*s + imag(vis[i])*c)
         Normal(mamp, err[i])
     end
+end
+
+test = @model begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(0.0, 2π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+    #Second mring mode
+    ma2 ~ Dists.Uniform(0.0,0.5)
+    mp2 ~ Dists.Uniform(0.0, 2π)
+    α2 = ma2*cos(mp2)
+    β2 = ma2*sin(mp2)
+
+
+    #Total flux
+    f ~ Dists.Uniform(0.8, 1.0)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+
+
+    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
+    img = renormed(smoothed(mring+disk,σ),f)
+    return img
+end
+
+
+mring2wfVA = @model u, v, s1, s2, err begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(0.0, 2π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+    #Second mring mode
+    ma2 ~ Dists.Uniform(0.0,0.5)
+    mp2 ~ Dists.Uniform(0.0, 2π)
+    α2 = ma2*cos(mp2)
+    β2 = ma2*sin(mp2)
+
+
+    #Total flux
+    f ~ Dists.Uniform(0.8, 1.0)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+
+    AP ~ LogNormal(0.0, 0.1)
+    AZ ~ LogNormal(0.0, 0.1)
+    JC ~ LogNormal(0.0, 0.1)
+    SM ~ LogNormal(0.0, 0.1)
+    AA ~ LogNormal(0.0, 0.1)
+    LM ~ LogNormal(0.0, 0.2)
+    SP ~ LogNormal(0.0, 0.1)
+    ga = (AP=aAP, AZ=aAZ, JC=aJC, SM=aSM, AA=aAA, LM=aLM, SP=aSP)
+
+
+
+    mring = ROSE.MRing(rad, (α1,α2), (β1,β2))
+    disk = renormed(stretched(ROSE.Disk(), rad, rad), floor)
+    img = renormed(smoothed(mring+disk,σ),f)
+    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+        g1 = g[s1[i]]
+        g2 = g[s2[i]]
+        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
+        Dists.Normal(mamp, erramp[i])
+    end
+
 end

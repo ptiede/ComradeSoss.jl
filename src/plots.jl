@@ -1,10 +1,9 @@
 using .Plots
 using .StatsPlots
-function plot_mean(sims)
+function plot_im(mean_img)
     p = plot()
-    mean_img = mean(sims)
     heatmap!(p,
-              imagepixels(sims[1])...,
+              imagepixels(mean_img)...,
               mean_img,
               aspect_ratio=:equal,
               size=(500,400),
@@ -27,7 +26,7 @@ function plot_samples(sims)
     return anim
 end
 
-function plot_vis_comp(visobs, m)
+function plot_vis_comp(visobs, gamps, gphase, m)
     u = ROSE.getdata(visobs, :u)
     v = ROSE.getdata(visobs, :v)
     visr = ROSE.getdata(visobs, :visr)
@@ -35,7 +34,19 @@ function plot_vis_comp(visobs, m)
     error = ROSE.getdata(visobs, :error)
     bl = ROSE.getdata(visobs, :baselines)
 
-    vis = ROSE.visibility_amplitude.(Ref(m), u, v)
+    mvis = ROSE.visibility.(Ref(m), u, v)
+    for i in eachindex(u)
+        s1,s2 = bl[i]
+        ga1 = gamps[s1]
+        ga2 = gamps[s2]
+        gθ1 = gphase[s1]
+        gθ2 = gphase[s2]
+        s,c = sincos(gθ1 - gθ2)
+        vr = ga1*ga2*(real(mvis[i])*c + imag(mvis[i])*s)
+        vi = ga1*ga2*(-real(mvis[i])*s + imag(mvis[i])*c)
+        mvis[i] = vr + vi*1im
+    end
+
 
     p = plot()
 
@@ -45,9 +56,9 @@ function plot_vis_comp(visobs, m)
     scatter!(p,hypot.(u,v)*rad2μas/1e9, visi,
                   yerr=error,
                   color=:orange, label="Imag Data", markershape=:square, alpha=0.5)
-    scatter!(p,hypot.(u,v)*rad2μas/1e9, real.(vis),
+    scatter!(p,hypot.(u,v)*rad2μas/1e9, real.(mvis),
                   color=:blue, label="Real Model")
-    scatter!(p,hypot.(u,v)*rad2μas/1e9, imag.(vis),
+    scatter!(p,hypot.(u,v)*rad2μas/1e9, imag.(mvis),
                   color=:red, label="Imag Model")
     ylabel!("Visibility")
     xlabel!("uvdist Gλ")

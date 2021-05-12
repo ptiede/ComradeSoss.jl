@@ -4,14 +4,13 @@
 Makes images using params. The params must be a vector of NamedTuples or
 something of the same nature.
 """
-function make_ims(model, params; fov=160.0, npix=256)
-    ims = []
+function make_mean(model, params; fov=160.0, npix=256)
+    ims = ROSE.StokesImage(zeros(npix,npix), fov, fov)
     for p in params
         m = Soss.predict(model, p)[:img]
-        im = ROSE.intensitymap(ROSE.basemodel(m), npix, npix, fov, fov)
-        push!(ims, im)
+        ims += ROSE.intensitymap(m, npix, npix, fov, fov)
     end
-    return ims
+    return ims/length(params)
 end
 
 

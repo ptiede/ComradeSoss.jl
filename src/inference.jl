@@ -27,6 +27,35 @@ function (ℓ::LogJoint)(x)
 end
 
 
+function create_joint(model,
+                      ampobs::ROSE.EHTObservation{F,A};
+                      fitgains=false
+                      ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum}
+    u = ROSE.getdata(ampobs, :u)
+    v = ROSE.getdata(ampobs, :v)
+    bl = ROSE.getdata(ampobs, :baselines)
+    s1 = first.(bl)
+    s2 = last.(bl)
+    err = ROSE.getdata(ampobs, :error)
+    amps = ROSE.getdata(ampobs, :amp)
+
+
+    joint = model(u=u,
+                  v=v,
+                  s1=s1,
+                  s2=s2,
+                  err=err,
+                )
+    if fitgains
+        conditioned = (amp = amps,)
+    else
+        conditioned = (amp = amps,
+                       AP=1.0, AZ=1.0, JC=1.0, SM=1.0,
+                       AA=1.0, LM=1.0, SP=1.0)
+    end
+    return LogJoint(conditioned, joint)
+end
+
 
 
 """
@@ -86,18 +115,18 @@ Takes in a model, visobs file and creates a joint distribution.
 Optionally, can fit for the gains. If true the gains are set to unity.
 """
 function create_joint(model,
-                      visobs::ROSE.EHTObservation{F,A},
+                      visobs::ROSE.EHTObservation{F,A};
                       fitgains=false
                       ) where {F, A<:ROSE.EHTVisibilityDatum}
 
-    u = data(visobs, :u)
-    v = data(visobs, :v)
-    bl = data(visobs, :baselines)
+    u = ROSE.getdata(visobs, :u)
+    v = ROSE.getdata(visobs, :v)
+    bl = ROSE.getdata(visobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    err = data(visobs, :error)
-    visr = data(visobs, :visr)
-    visi = data(visobs, :visi)
+    err = ROSE.getdata(visobs, :error)
+    visr = ROSE.getdata(visobs, :visr)
+    visi = ROSE.getdata(visobs, :visi)
 
     joint = model(u=u,
                   v=v,
@@ -111,8 +140,8 @@ function create_joint(model,
         conditioned = (visr = visr, visi = visi,
                        aAP=1.0, aAZ=1.0, aJC=1.0, aSM=1.0,
                        aAA=1.0, aLM=1.0, aSP=1.0,
-                       pAP=1.0, pAZ=1.0, pJC=1.0, pSM=1.0,
-                       pAA=1.0, pLM=1.0, pSP=1.0,
+                       pAP=0.0, pAZ=0.0, pJC=0.0, pSM=0.0,
+                       pAA=0.0, pLM=0.0, pSP=0.0,
                        )
     end
 
@@ -124,8 +153,8 @@ end
 
 
 function prior_transform(lj)
-    priors = Soss.prior(lj.model.model,:g, keys(lj.data)...)
-    pr = priors(lj.model.argvals)
+    priors = Soss.prior(lj.model.model, keys(lj.data)...)
+    pr = priors(merge(lj.model.argvals, lj.model.obs))
     pnames = keys(priors.dists)
     pdists = [eval(priors.dists[n]) for n in pnames]
     return x->quantile.(pdists, x), pnames, pr
@@ -152,7 +181,7 @@ function nested_sampler(lj;nlive=400, kwargs...)
     function lklhd(x::Vector{T}) where {T}
         θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
         var = merge(θ, lj.data)
-        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, θ)::T
+        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
         return isnan(ℓ) ? -1e10 : ℓ
     end
 
@@ -177,7 +206,7 @@ function dynesty_sampler(lj; kwargs...)
     function lklhd(x::Vector{T}) where {T}
         θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
         var = merge(θ, lj.data)
-        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, θ)::T
+        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
         return isnan(ℓ) ? -1e10 : ℓ
     end
 
