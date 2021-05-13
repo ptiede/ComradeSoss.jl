@@ -1,4 +1,6 @@
 module ROSESoss
+#Turn off precompilations because of GG bug https://github.com/cscherrer/Soss.jl/issues/267
+__precompile__(false)
 
 using Reexport
 @reexport using Soss

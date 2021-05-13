@@ -2,8 +2,8 @@ Base.@kwdef struct ObsChar
     flag_lsnr=false
     deblur=false
     zblscale=false
-    lkgerr=0.02
-    floor=0.01
+    lkgerr=0.00
+    floor=0.00
     t_gather=60.0
 end
 
