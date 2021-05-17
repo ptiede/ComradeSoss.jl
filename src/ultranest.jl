@@ -14,7 +14,7 @@ function ultranest_sampler(lj; kwargs...)
     prtransvec(X) = reduce(vcat, (x -> prt(x)').(eachrow(X)))
 
 
-    function lklhd(x::Vector{T}) where {T}
+    function lklhd(x::AbstractVector{T}) where {T}
         θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
         var = merge(θ, gdata(lj))
         ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
@@ -28,6 +28,8 @@ function ultranest_sampler(lj; kwargs...)
                                         transform=prtransvec,
                                         vectorized=true
                                         )
+    sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=400, adaptive_nsteps="move-distance")
+
     res = sampler.run(;kwargs...)
 
 
