@@ -7,7 +7,7 @@ using Reexport
 @reexport using ROSE
 using PyCall
 using MCMCChains
-using StatsBase: sample
+using StatsBase: sample, median
 using NestedSamplers
 using Requires
 using StructArrays

@@ -51,7 +51,7 @@ function create_joint(model,
     else
         conditioned = (amp = amps,
                        AP=1.0, AZ=1.0, JC=1.0, SM=1.0,
-                       AA=1.0, LM=1.0, SP=1.0)
+                       AA=1.0, LM=1.0, SP=1.0, PV=1.0)
     end
     return LogJoint(conditioned, joint)
 end
@@ -103,7 +103,7 @@ function create_joint(model,
     else
         conditioned = (amp = amps, cphase = cps,
                        AP=1.0, AZ=1.0, JC=1.0, SM=1.0,
-                       AA=1.0, LM=1.0, SP=1.0)
+                       AA=1.0, LM=1.0, SP=1.0, PV=1.0)
     end
     return LogJoint(conditioned, joint)
 end
@@ -139,9 +139,9 @@ function create_joint(model,
     else
         conditioned = (visr = visr, visi = visi,
                        aAP=1.0, aAZ=1.0, aJC=1.0, aSM=1.0,
-                       aAA=1.0, aLM=1.0, aSP=1.0,
+                       aAA=1.0, aLM=1.0, aSP=1.0, aPV=1.0,
                        pAP=0.0, pAZ=0.0, pJC=0.0, pSM=0.0,
-                       pAA=0.0, pLM=0.0, pSP=0.0,
+                       pAA=0.0, pLM=0.0, pSP=0.0, pPV = 0.0
                        )
     end
 
