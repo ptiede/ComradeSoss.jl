@@ -397,8 +397,8 @@ mring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
     #Third mring mode
     ma4 ~ Dists.Uniform(0.0,0.5)
     mp4 ~ Dists.Uniform(-1π,1π)
-    α4 = ma3*cos(mp4)
-    β4 = ma3*sin(mp4)
+    α4 = ma4*cos(mp4)
+    β4 = ma4*sin(mp4)
 
 
 
@@ -481,8 +481,8 @@ smring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
     #Third mring mode
     ma4 ~ Dists.Uniform(0.0,0.5)
     mp4 ~ Dists.Uniform(-1π,1π)
-    α4 = ma3*cos(mp4)
-    β4 = ma3*sin(mp4)
+    α4 = ma4*cos(mp4)
+    β4 = ma4*sin(mp4)
 
 
 
