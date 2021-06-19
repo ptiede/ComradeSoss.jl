@@ -9,6 +9,192 @@ using Soss
 using ROSE
 import Distributions as Dists
 
+
+
+
+"""
+    mring2VACP
+Returns a fiducial mring model. That is, it contains a 2 mode mring model
+with a floor that is a fraction of the flux of the mring. This include
+gain amplitudes in fitting and fits visibility amplitudes and closure phases.
+"""
+mring1VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(-1π,1π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+
+    #Total flux
+    f ~ Dists.Uniform(0.5, 5.0)
+
+    #Gain amps
+    AP ~ Dists.LogNormal(0.0, 0.1)
+    AZ ~ Dists.LogNormal(0.0, 0.1)
+    JC ~ Dists.LogNormal(0.0, 0.1)
+    SM ~ Dists.LogNormal(0.0, 0.1)
+    AA ~ Dists.LogNormal(0.0, 0.1)
+    LM ~ Dists.LogNormal(0.0, 0.2)
+    SP ~ Dists.LogNormal(0.0, 0.1)
+    PV ~ Dists.LogNormal(0.0, 0.1)
+    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP, PV=PV)
+
+
+    mring = renormed(ROSE.MRing(rad, (α1,), (β1,)), f)
+    img = smoothed(mring,σ)
+
+    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+        g1 = g[s1[i]]
+        g2 = g[s2[i]]
+        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
+        Dists.Normal(mamp, erramp[i])
+    end
+
+    cphase ~ For(eachindex(u1cp, errcp)) do i
+        mphase = ROSE.closure_phase(img,
+                                    u1cp[i],
+                                    v1cp[i],
+                                    u2cp[i],
+                                    v2cp[i],
+                                    u3cp[i],
+                                    v3cp[i]
+                                )
+        CPNormal(mphase, errcp[i])
+    end
+end
+
+"""
+    mring1wfVACP
+Returns a fiducial mring model. That is, it contains a 2 mode mring model
+with a floor that is a fraction of the flux of the mring. This include
+gain amplitudes in fitting and fits visibility amplitudes and closure phases.
+"""
+mring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(-1π,1π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+    #Total flux
+    f ~ Dists.Uniform(0.5, 5.0)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+
+    #Gain amps
+    AP ~ Dists.LogNormal(0.0, 0.1)
+    AZ ~ Dists.LogNormal(0.0, 0.1)
+    JC ~ Dists.LogNormal(0.0, 0.1)
+    SM ~ Dists.LogNormal(0.0, 0.1)
+    AA ~ Dists.LogNormal(0.0, 0.1)
+    LM ~ Dists.LogNormal(0.0, 0.2)
+    SP ~ Dists.LogNormal(0.0, 0.1)
+    PV ~ Dists.LogNormal(0.0, 0.1)
+    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP, PV=PV)
+
+
+    mring = renormed(ROSE.MRing(rad, (α1,), (β1,)), f-f*floor)
+    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
+    img = smoothed(mring+disk,σ)
+
+    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+        g1 = g[s1[i]]
+        g2 = g[s2[i]]
+        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
+        Dists.Normal(mamp, erramp[i])
+    end
+
+    cphase ~ For(eachindex(u1cp, errcp)) do i
+        mphase = ROSE.closure_phase(img,
+                                    u1cp[i],
+                                    v1cp[i],
+                                    u2cp[i],
+                                    v2cp[i],
+                                    u3cp[i],
+                                    v3cp[i]
+                                )
+        CPNormal(mphase, errcp[i])
+    end
+end
+
+"""
+    smring1wfVACP
+Returns a fiducial mring model with a stretch added
+"""
+smring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(-1π,1π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+    #Stretch
+    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    ξτ ~ Dists.Uniform(-π/2, π/2)
+    scx = 1/sqrt(1-τ)
+    scy = sqrt(1-τ)
+
+
+
+    #Total flux
+    f ~ Dists.Uniform(0.5, 5.0)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+
+    #Gain amps
+    AP ~ Dists.LogNormal(0.0, 0.1)
+    AZ ~ Dists.LogNormal(0.0, 0.1)
+    JC ~ Dists.LogNormal(0.0, 0.1)
+    SM ~ Dists.LogNormal(0.0, 0.1)
+    AA ~ Dists.LogNormal(0.0, 0.1)
+    LM ~ Dists.LogNormal(0.0, 0.2)
+    SP ~ Dists.LogNormal(0.0, 0.1)
+    PV ~ Dists.LogNormal(0.0, 0.1)
+    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP, PV=PV)
+
+
+    mring = renormed(ROSE.MRing(rad, (α1,), (β1,)), f-f*floor)
+    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
+    img = smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ)
+
+    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+        g1 = g[s1[i]]
+        g2 = g[s2[i]]
+        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
+        Dists.Normal(mamp, erramp[i])
+    end
+
+    cphase ~ For(eachindex(u1cp, errcp)) do i
+        mphase = ROSE.closure_phase(img,
+                                    u1cp[i],
+                                    v1cp[i],
+                                    u2cp[i],
+                                    v2cp[i],
+                                    u3cp[i],
+                                    v3cp[i]
+                                )
+        CPNormal(mphase, errcp[i])
+    end
+end
+
 """
     mring2VACP
 Returns a fiducial mring model. That is, it contains a 2 mode mring model
@@ -139,6 +325,77 @@ mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
     end
 end
 
+"""
+    smring2wfVACP
+Returns a fiducial mring model with a stretch added
+"""
+smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
+    diam ~ Dists.Uniform(25.0, 75.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    #First mring mode
+    ma1 ~ Dists.Uniform(0.0,0.5)
+    mp1 ~ Dists.Uniform(-1π,1π)
+    α1 = ma1*cos(mp1)
+    β1 = ma1*sin(mp1)
+
+    #Second mring mode
+    ma2 ~ Dists.Uniform(0.0,0.5)
+    mp2 ~ Dists.Uniform(-1π,1π)
+    α2 = ma2*cos(mp2)
+    β2 = ma2*sin(mp2)
+
+    #Stretch
+    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    ξτ ~ Dists.Uniform(-π/2, π/2)
+    scx = 1/sqrt(1-τ)
+    scy = sqrt(1-τ)
+
+
+
+    #Total flux
+    f ~ Dists.Uniform(0.5, 5.0)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+
+    #Gain amps
+    AP ~ Dists.LogNormal(0.0, 0.1)
+    AZ ~ Dists.LogNormal(0.0, 0.1)
+    JC ~ Dists.LogNormal(0.0, 0.1)
+    SM ~ Dists.LogNormal(0.0, 0.1)
+    AA ~ Dists.LogNormal(0.0, 0.1)
+    LM ~ Dists.LogNormal(0.0, 0.2)
+    SP ~ Dists.LogNormal(0.0, 0.1)
+    PV ~ Dists.LogNormal(0.0, 0.1)
+    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP, PV=PV)
+
+
+    mring = renormed(ROSE.MRing(rad, (α1,α2), (β1,β2)), f-f*floor)
+    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
+    img = smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ)
+
+    amp ~ For(eachindex(uamp,vamp, erramp)) do i
+        g1 = g[s1[i]]
+        g2 = g[s2[i]]
+        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
+        Dists.Normal(mamp, erramp[i])
+    end
+
+    cphase ~ For(eachindex(u1cp, errcp)) do i
+        mphase = ROSE.closure_phase(img,
+                                    u1cp[i],
+                                    v1cp[i],
+                                    u2cp[i],
+                                    v2cp[i],
+                                    u3cp[i],
+                                    v3cp[i]
+                                )
+        CPNormal(mphase, errcp[i])
+    end
+end
 
 
 """
@@ -214,77 +471,6 @@ mring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
 end
 
 
-"""
-    smring2wfVACP
-Returns a fiducial mring model with a stretch added
-"""
-smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
-    fwhm ~ Dists.Uniform(1.0, 40.0)
-    rad = diam/2
-    σ = fwhm/fwhmfac
-
-    #First mring mode
-    ma1 ~ Dists.Uniform(0.0,0.5)
-    mp1 ~ Dists.Uniform(-1π,1π)
-    α1 = ma1*cos(mp1)
-    β1 = ma1*sin(mp1)
-
-    #Second mring mode
-    ma2 ~ Dists.Uniform(0.0,0.5)
-    mp2 ~ Dists.Uniform(-1π,1π)
-    α2 = ma2*cos(mp2)
-    β2 = ma2*sin(mp2)
-
-    #Stretch
-    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
-    ξτ ~ Dists.Uniform(-π/2, π/2)
-    scx = 1/sqrt(1-τ)
-    scy = sqrt(1-τ)
-
-
-
-    #Total flux
-    f ~ Dists.Uniform(0.5, 5.0)
-
-    #Fraction of floor flux
-    floor ~ Dists.Uniform(0.0, 1.0)
-
-    #Gain amps
-    AP ~ Dists.LogNormal(0.0, 0.1)
-    AZ ~ Dists.LogNormal(0.0, 0.1)
-    JC ~ Dists.LogNormal(0.0, 0.1)
-    SM ~ Dists.LogNormal(0.0, 0.1)
-    AA ~ Dists.LogNormal(0.0, 0.1)
-    LM ~ Dists.LogNormal(0.0, 0.2)
-    SP ~ Dists.LogNormal(0.0, 0.1)
-    PV ~ Dists.LogNormal(0.0, 0.1)
-    g = (AP=AP, AZ=AZ, JC=JC, SM=SM, AA=AA, LM=LM, SP=SP, PV=PV)
-
-
-    mring = renormed(ROSE.MRing(rad, (α1,α2), (β1,β2)), f-f*floor)
-    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
-    img = smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ)
-
-    amp ~ For(eachindex(uamp,vamp, erramp)) do i
-        g1 = g[s1[i]]
-        g2 = g[s2[i]]
-        mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
-        Dists.Normal(mamp, erramp[i])
-    end
-
-    cphase ~ For(eachindex(u1cp, errcp)) do i
-        mphase = ROSE.closure_phase(img,
-                                    u1cp[i],
-                                    v1cp[i],
-                                    u2cp[i],
-                                    v2cp[i],
-                                    u3cp[i],
-                                    v3cp[i]
-                                )
-        CPNormal(mphase, errcp[i])
-    end
-end
 
 
 """
