@@ -27,7 +27,7 @@ Reexport = "1"
 Requires = "1"
 Soss = "0.18,0.19"
 StatsBase = "0.33"
-StructArrays = "0.5"
+StructArrays = "0.5, 0.6"
 julia = "1.5,1.6"
 
 [extras]
