@@ -193,6 +193,75 @@ end
 
 
 """
+    nested_sampler(logj; nlive=400, kwargs...)
+Takes a problem defined by the logj likelihood object and runs the
+NestedSampler.jl nested sampler algorithm on it. This constructs
+the approporate likliehood and prior transform for you if you stick to one
+of the predefined models.
+
+Returns a chain, state, names
+"""
+function nested_sampler(lj::Soss.ConditionalModel;nlive=400, kwargs...)
+    prt,pnames,pr = prior_transform(lj)
+    println(prt, pnames, pr)
+    function lklhd(x::Vector{T}) where {T}
+        θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
+        var = merge(θ, observations(lj))
+        println(var)
+        ℓ::T =  logdensity(lj, var)::T - logdensity(pr, var)::T
+        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
+    end
+
+    sampler = Nested(length(pnames), nlive)
+    model = NestedModel(lklhd, prt)
+    chain, state = sample(model, sampler; dlogz=0.2, param_names=String.(collect(pnames)))
+    return chain, state, pnames
+end
+
+"""
+    dynesty_sampler(logj; nlive=400, kwargs...)
+Takes a problem defined by the logj likelihood object and runs the
+dynesty on it using the default options and static sampler.
+
+Returns a chain, state
+"""
+function dynesty_sampler(lj::Soss.ConditionalModel; progress=true, kwargs...)
+    prt, pnames,pr = prior_transform(lj)
+
+
+    function lklhd(x::Vector{T}) where {T}
+        θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
+        ℓ =  logdensity(lj, θ)::T - logdensity(pr, θ)::T
+        return convert(T, isnan(ℓ) ? -1e10 : ℓ)
+    end
+
+    sampler =  dynesty.NestedSampler(lklhd, prt, length(pnames); kwargs...)
+    sampler.run_nested(print_progress=progress)
+    res = sampler.results
+    samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
+    logz = res["logz"][end]
+    logzerr = res["logzerr"][end]
+
+    vals = hcat(samples, weights)
+    chain = Chains(vals, [pnames..., :weights], Dict(:internals => ["weights"]),evidence=logz)
+    return chain, (logzerr=logzerr, ), pnames
+end
+
+function prior_transform(lj::Soss.ConditionalModel)
+    priors = Soss.prior(lj.model, observed(lj)...)
+    println(priors)
+    pr = priors(merge(argvals(lj), observations(lj)))
+    pnames = keys(priors.dists)
+    pdists = [eval(priors.dists[n]) for n in pnames]
+    return x->quantile.(pdists, x), pnames, pr
+end
+
+
+
+
+
+
+"""
     dynesty_sampler(logj; nlive=400, kwargs...)
 Takes a problem defined by the logj likelihood object and runs the
 dynesty on it using the default options and static sampler.

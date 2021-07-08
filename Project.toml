@@ -20,14 +20,14 @@ StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
 [compat]
 Distributions = "0.22 - 0.25"
 MCMCChains = "4"
-MeasureTheory = "0.6"
+MeasureTheory = "0.6,0.7,0.8"
 NestedSamplers = "0.6"
 PyCall = "1"
 Reexport = "1"
-Requires = "1"
+Requires = "0.5 - 1"
 Soss = "0.18,0.19"
-StatsBase = "0.33"
-StructArrays = "0.5"
+StatsBase = "0.33,0.34,0.35"
+StructArrays = "0.3,0.4,0.5"
 julia = "1.5,1.6"
 
 [extras]
