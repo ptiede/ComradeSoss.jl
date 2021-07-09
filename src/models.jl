@@ -65,7 +65,7 @@ mring1VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -125,7 +125,7 @@ mring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -197,7 +197,7 @@ mring1wf1gVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -277,7 +277,7 @@ mring2wf1gVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -346,7 +346,7 @@ smring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -409,7 +409,7 @@ mring2VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -476,7 +476,7 @@ mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -548,7 +548,7 @@ smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -621,7 +621,7 @@ mring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -703,7 +703,7 @@ smring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -781,7 +781,7 @@ mring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -868,7 +868,7 @@ smring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
@@ -942,7 +942,7 @@ dmring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPNormal(mphase, errcp[i])
     end
 end
 
