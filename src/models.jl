@@ -19,7 +19,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring1VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -76,7 +76,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -136,7 +136,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring1wf1gVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -210,7 +210,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring2wf1gVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -289,7 +289,7 @@ end
 Returns a fiducial mring model with a stretch added
 """
 smring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -357,7 +357,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring2VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -420,7 +420,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -485,7 +485,7 @@ end
 Returns a fiducial mring model with a stretch added
 """
 smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -560,7 +560,7 @@ with a floor that is a fraction of the flux of the mring. This include
 gain amplitudes in fitting and fits visibility amplitudes and closure phases.
 """
 mring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -633,7 +633,7 @@ end
 Returns a fiducial mring model with a stretch added
 """
 smring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -712,7 +712,7 @@ end
 Returns a fiducial mring model
 """
 mring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -791,7 +791,7 @@ end
 Returns a fiducial mring model with a stretch added
 """
 smring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -878,7 +878,7 @@ end
 Returns a double fiducial mring model
 """
 dmring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
-    diam1 ~ Dists.Uniform(25.0, 75.0)
+    diam1 ~ Dists.Uniform(25.0, 85.0)
     Δdiam ~ Dists.Uniform(1.0, 4.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     Δfwhm ~ Dists.Uniform(0.0, 2.0)
@@ -953,7 +953,7 @@ end
 Returns a fiducial mring model with a stretch added
 """
 smring2wfVis = @model u, v, s1, s2, err begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -1037,7 +1037,7 @@ end
 Returns a fiducial mring model with a stretch added
 """
 smring3wfVis = @model u, v, s1, s2, err begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -1130,7 +1130,7 @@ constant gain amps, and gain phases.
 """
 
 mring1Vis = @model u, v, s1, s2, err begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -1196,7 +1196,7 @@ constant gain amps, and gain phases.
 """
 
 mring2wfVis = @model u, v, s1, s2, err begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
@@ -1268,7 +1268,7 @@ end
 
 
 mring2wfVA = @model u, v, s1, s2, err begin
-    diam ~ Dists.Uniform(25.0, 75.0)
+    diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
     rad = diam/2
     σ = fwhm/fwhmfac
