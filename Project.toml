@@ -16,10 +16,10 @@ Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 Soss = "8ce77f84-9b61-11e8-39ff-d17a774bf41c"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
+TupleVectors = "615932cf-77b6-4358-adcd-5b7eba981d7e"
 
 [compat]
 Distributions = "0.22 - 0.25"
-MCMCChains = "4"
 MeasureTheory = "0.6,0.7,0.8"
 NestedSamplers = "0.6"
 PyCall = "1"

@@ -104,6 +104,34 @@ function chi2(m,obs::ROSE.EHTObservation{F,D}, args...) where {F,D<:ROSE.EHTClos
     return chi2
 end
 
+function chi2(m,obs::ROSE.EHTObservation{F,D}, args...) where {F,D<:ROSE.EHTLogClosureAmplitudeDatum}
+    u1 = getdata(obs, :u1)
+    v1 = getdata(obs, :v1)
+    u2 = getdata(obs, :u2)
+    v2 = getdata(obs, :v2)
+    u3 = getdata(obs, :u3)
+    v3 = getdata(obs, :v3)
+    u4 = getdata(obs, :u4)
+    v4 = getdata(obs, :v4)
+    lcamp = getdata(obs, :amp)
+    error = getdata(obs, :error)
+
+    mlcamp = ROSE.logclosure_amplitude.(Ref(m),
+                               u1, v1,
+                               u2, v2,
+                               u3, v3,
+                               u4, v4
+                              )
+
+    chi2 = 0.0
+    for i in eachindex(u1)
+        dθ = lcamp[i] - mlcamp[i]
+        chi2 += abs2(dθ/error[i])
+    end
+    return chi2
+end
+
+
 function ampres(m, gains, ampobs)
     u = ROSE.getdata(ampobs, :u)
     v = ROSE.getdata(ampobs, :v)

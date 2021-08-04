@@ -243,8 +243,8 @@ function dynesty_sampler(lj::Soss.ConditionalModel; progress=true, kwargs...)
     logzerr = res["logzerr"][end]
 
     vals = hcat(samples, weights)
-    chain = Chains(vals, [pnames..., :weights], Dict(:internals => ["weights"]),evidence=logz)
-    return chain, (logzerr=logzerr, ), pnames
+    chain = TupleVector(NamedTuple{merge(pnames, (:weights,))}(c for c in eachcol(vals)))
+    return chain, (logz=logz, logzerr=logzerr, ), pnames
 end
 
 function prior_transform(lj::Soss.ConditionalModel)

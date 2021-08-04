@@ -65,7 +65,7 @@ mring1VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -125,7 +125,7 @@ mring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -197,7 +197,7 @@ mring1wf1gVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -277,7 +277,7 @@ mring2wf1gVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -301,7 +301,7 @@ smring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
     β1 = ma1*sin(mp1)
 
     #Stretch
-    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    τ ~ Dists.Uniform( 0.0, 0.5)
     ξτ ~ Dists.Uniform(-π/2, π/2)
     scx = 1/sqrt(1-τ)
     scy = sqrt(1-τ)
@@ -346,7 +346,7 @@ smring1wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -409,7 +409,7 @@ mring2VACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, v3
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -476,7 +476,7 @@ mring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -503,7 +503,7 @@ smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
     β2 = ma2*sin(mp2)
 
     #Stretch
-    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    τ ~ Dists.Uniform(0.0, 1.0)
     ξτ ~ Dists.Uniform(-π/2, π/2)
     scx = 1/sqrt(1-τ)
     scy = sqrt(1-τ)
@@ -548,7 +548,7 @@ smring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -621,7 +621,7 @@ mring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -658,7 +658,7 @@ smring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
 
 
     #Stretch
-    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    τ ~ Dists.Uniform( 0.0, 0.5)
     ξτ ~ Dists.Uniform(-π/2, π/2)
     scx = 1/sqrt(1-τ)
     scy = sqrt(1-τ)
@@ -703,7 +703,7 @@ smring3wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -781,7 +781,7 @@ mring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp, 
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -823,7 +823,7 @@ smring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
 
 
     #Stretch
-    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    τ ~ Dists.Uniform( 0.0, 0.5)
     ξτ ~ Dists.Uniform(-π/2, π/2)
     scx = 1/sqrt(1-τ)
     scy = sqrt(1-τ)
@@ -868,7 +868,7 @@ smring4wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -942,7 +942,7 @@ dmring2wfVACP = @model uamp, vamp, s1, s2, erramp, u1cp, v1cp, u2cp, v2cp, u3cp,
                                     u3cp[i],
                                     v3cp[i]
                                 )
-        ROSE.CPNormal(mphase, errcp[i])
+        ROSE.CPVonMises(mphase, errcp[i])
     end
 end
 
@@ -1062,7 +1062,7 @@ smring3wfVis = @model u, v, s1, s2, err begin
 
 
     #Stretch
-    τ ~ Dists.truncated(Dists.Normal(0.0, 0.2), 0.0, 1.0)
+    τ ~ Dists.Uniform( 0.0, 0.5)
     ξτ ~ Dists.Uniform(-π/2, π/2)
     scx = 1/sqrt(1-τ)
     scy = sqrt(1-τ)
