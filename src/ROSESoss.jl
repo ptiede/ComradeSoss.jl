@@ -35,7 +35,7 @@ export extract_amps, extract_vis, extract_cphase,
        threaded_optimize,
        chi2, plot_mean, plot_samples, plot_vis_comp, plot_amp_comp,
        plot_cp_comp, plot_res_density,
-       SossModels,
+       SossModels, hform, transform,
        ehtim
 
 
@@ -43,6 +43,7 @@ include("ehtim.jl")
 include("utility.jl")
 include("inference.jl")
 include("models.jl")
+include("hypercube.jl")
 using .SossModels
 
 
