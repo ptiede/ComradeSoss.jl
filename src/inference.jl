@@ -149,6 +149,50 @@ function create_joint(model,
 end
 
 
+function create_joint(model,
+                     dlca::ROSE.EHTObservation{F,A},
+                     dcp::ROSE.EHTObservation{F,P};
+                     kwargs...) where {F,
+                                       A<:ROSE.EHTLogClosureAmplitudeDatum,
+                                       P<:ROSE.EHTClosurePhaseDatum}
+
+    u1a = getdata(dlca, :u1)
+    v1a = getdata(dlca, :v1)
+    u2a = getdata(dlca, :u2)
+    v2a = getdata(dlca, :v2)
+    u3a = getdata(dlca, :u3)
+    v3a = getdata(dlca, :v3)
+    u4a = getdata(dlca, :u4)
+    v4a = getdata(dlca, :v4)
+    lcamp = getdata(dlca, :amp)
+    errcamp = getdata(dlca, :error)
+
+    u1cp = getdata(dcp, :u1)
+    v1cp = getdata(dcp, :v1)
+    u2cp = getdata(dcp, :u2)
+    v2cp = getdata(dcp, :v2)
+    u3cp = getdata(dcp, :u3)
+    v3cp = getdata(dcp, :v3)
+    cp = getdata(dcp, :phase)
+    errcp = getdata(dcp, :error)
+
+    m = model(u1a=u1a,v1a=v1a,
+              u2a=u2a,v2a=v2a,
+              u3a=u3a,v3a=v3a,
+              u4a=u4a,v4a=v4a,
+              errcamp=errcamp,
+              u1cp=u1cp,v1cp=v1cp,
+              u2cp=u2cp,v2cp=v2cp,
+              u3cp=u3cp,v3cp=v3cp,
+              errcp=errcp
+        )
+
+    conditioned = (lcamp = lcamp, cp = cp,)
+    return LogJoint(conditioned, joint)
+end
+
+
+
 
 
 
