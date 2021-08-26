@@ -20,7 +20,7 @@ TupleVectors = "615932cf-77b6-4358-adcd-5b7eba981d7e"
 
 [compat]
 Distributions = "0.22 - 0.25"
-MeasureTheory = "0.6,0.7,0.8"
+MeasureTheory = "0.6,0.7,0.8, 0.11"
 NestedSamplers = "0.6"
 PyCall = "1"
 Reexport = "1"
