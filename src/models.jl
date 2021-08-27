@@ -5,10 +5,10 @@ module SossModels
 __precompile__(false)
 const fwhmfac = 2*sqrt(2*log(2))
 
-using Soss
-using ROSE
-using MeasureTheory
-import Distributions as Dists
+using .Soss
+using .ROSE
+using .MeasureTheory
+import .Distributions as Dists
 
 
 gamps = @model begin

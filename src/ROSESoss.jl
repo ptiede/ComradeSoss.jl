@@ -1,19 +1,20 @@
 module ROSESoss
 #Turn off precompilations because of GG bug https://github.com/cscherrer/Soss.jl/issues/267
-__precompile__(false)
 
 using Reexport
 @reexport using Soss
 @reexport using ROSE
-using PyCall
-using MCMCChains
-using StatsBase: sample, median
-using NestedSamplers
-using Requires
-using StructArrays
+
 import Distributions as Dists
 using MeasureTheory
+using NestedSamplers
+using PyCall
 using Random
+using Requires
+using ParameterHandling
+using StatsBase: sample, median
+using StructArrays
+using TupleVectors
 
 
 # This is a hack for MeasureTheory since it wants the type to output
@@ -43,14 +44,12 @@ include("ehtim.jl")
 include("utility.jl")
 include("inference.jl")
 include("models.jl")
-include("hypercube.jl")
 using .SossModels
 
 
 function __init__()
     copy!(dynesty, pyimport("dynesty"))
     copy!(ehtim, pyimport("ehtim"))
-    #    @require BlackBoxOptim="a134a8b2-14d6-55f6-9291-3336d3ab0209"
     @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
         @require StatsPlots="f3b207a7-027a-5e70-b257-86293d7955fd" include("plots.jl")
     end

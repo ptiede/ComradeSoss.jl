@@ -5,10 +5,11 @@ version = "0.1.1"
 
 [deps]
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
-MCMCChains = "c7f686f2-ff18-58e9-bc7b-31028e88f75d"
+HypercubeTransform = "9ec9aee3-0fd3-44c2-8e61-a50acc66f3c8"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
 MeasureTheory = "eadaa1a4-d27c-401d-8699-e962e1bbc33b"
 NestedSamplers = "41ceaf6f-1696-4a54-9b49-2e7a9ec3782e"
+ParameterHandling = "2412ca09-6db7-441c-8e3a-88d5709968c5"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
 ROSE = "99d987ce-9a1e-4df8-bc0b-1ea019aa547b"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
