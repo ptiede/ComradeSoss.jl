@@ -186,19 +186,17 @@ of the predefined models.
 
 Returns a chain, state, names
 """
-function nested_sampler(lj;nlive=400, kwargs...)
-    tc = hform(lj)
-    pr = Soss.prior(lj.model, Soss.observed(lj)...)
-    function lklhd(x::Vector{T}) where {T}
-        θ = transform(tc, x)
-        ℓ::T =  logdensity(lj, θ)::T - logdensity(pr, θ)::T
-        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
-    end
+function nested_sampler(lj;nlive=400,dlogz=0.001*nlive, kwargs...)
+    lklhd, prt, tc, unflatten = _split_conditional(lj)
 
     sampler = Nested(dimension(tc), nlive)
-    model = NestedModel(lklhd, x->transform(tc, x))
-    chain, state = sample(model, sampler; dlogz=0.2, param_names=String.(collect(pnames)))
-    return chain, state, pnames
+    model = NestedModel(lklhd, prt)
+    chain, state = sample(model, sampler; dlogz=dlogz, chain_type=Array)
+    logz = state[:logz]
+    logzerr = state[:logzerr]
+    logl = state[:logl]
+    stats = (logz=logz, logzerr=logzerr, logl=logl)
+    return _create_tv(unflatten, @view(chain[:,1:end-1]), @view(chain[:,end]) ), stats
 end
 
 
@@ -218,7 +216,9 @@ function dynesty_sampler(lj::Soss.ConditionalModel; progress=true, kwargs...)
     samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
     logz = res["logz"][end]
     logzerr = res["logzerr"][end]
-    return _create_tv(unflatten, samples, weights), (logz=logz, logzerr=logzerr)
+    logl = res["logl"][end]
+    stats = (logz=logz, logzerr=logzerr, logl=logl)
+    return _create_tv(unflatten, samples, weights), stats
 end
 
 
