@@ -85,7 +85,7 @@ Optionally, can fit for the gains. If true the gains are set to unity.
 """
 function create_joint(model,
                       visobs::ROSE.EHTObservation{F,A};
-                      fitgains=false
+                      amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1)
                       ) where {F, A<:ROSE.EHTVisibilityDatum}
 
     u = ROSE.getdata(visobs, :u)
@@ -93,26 +93,22 @@ function create_joint(model,
     bl = ROSE.getdata(visobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
+    stations = Tuple(unique(vcat(s1,s2)))
+    gpriors = values(select(amppriors, stations))
     err = ROSE.getdata(visobs, :error)
     visr = ROSE.getdata(visobs, :visr)
     visi = ROSE.getdata(visobs, :visi)
 
-    joint = vis(image = model, u=u,
-                  v=v,
-                  s1=s1,
-                  s2=s2,
-                  err=err
+    joint = vis(image = model,
+                gamps=gamps(stations=stations, spriors=gpriors,),
+                gphase=gphase(stations=stations),
+                u=u,
+                v=v,
+                s1=s1,
+                s2=s2,
+                err=err
                 )
-    if fitgains
-        conditioned = (visr = visr, visi = visi,)
-    else
-        conditioned = (visr = visr, visi = visi,
-                       aAP=1.0, aAZ=1.0, aJC=1.0, aSM=1.0,
-                       aAA=1.0, aLM=1.0, aSP=1.0, aPV=1.0,
-                       pAP=0.0, pAZ=0.0, pJC=0.0, pSM=0.0,
-                       pAA=0.0, pLM=0.0, pSP=0.0, pPV = 0.0
-                       )
-    end
+    conditioned = (visr = visr, visi = visi,)
 
     return joint | conditioned
 end
@@ -164,20 +160,20 @@ end
 
 
 
+@inline function _split_conditional(lj)
+    tc = ascube(lj)
+    pr = Soss.prior(lj.model, Soss.observed(lj)...)
+    cpr = pr(argvals(lj))
+    base = transform(tc, fill(0.5, dimension(tc)))
+    med, unflatten = ParameterHandling.flatten(base)
+    function lklhd(x::Vector{T}) where {T}
+        θ = unflatten(x)
+        ℓ::T =  logdensity(lj, θ)::T - logdensity(cpr, θ)::T
+        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
+    end
 
-
-
-function prior_transform(lj)
-    priors = Soss.prior(lj.model.model, keys(lj.data)...)
-    pr = priors(merge(lj.model.argvals, lj.model.obs))
-    pnames = keys(priors.dists)
-    pdists = [eval(priors.dists[n]) for n in pnames]
-    return x->quantile.(pdists, x), pnames, pr
-end
-
-
-function resample_equal(chain)
-    return sample(chain, Weights(vec(chain["weights"])), length(chain))
+    prt = x->first(ParameterHandling.flatten(transform(tc, x)))
+    return lklhd, prt, tc, unflatten
 end
 
 
@@ -214,28 +210,14 @@ dynesty on it using the default options and static sampler.
 Returns a chain, state
 """
 function dynesty_sampler(lj::Soss.ConditionalModel; progress=true, kwargs...)
-    tc = ascube(lj)
-    pr = Soss.prior(lj.model, Soss.observed(lj)...)
-    cpr = pr(argvals(lj))
-    base = transform(tc, fill(0.5, dimension(tc)))
-    med, unflatten = ParameterHandling.flatten(base)
-    function lklhd(x::Vector{T}) where {T}
-        θ = unflatten(x)
-        ℓ::T =  logdensity(lj, θ)::T - logdensity(cpr, θ)::T
-        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
-    end
+    lklhd, prt, tc, unflatten = _split_conditional(lj)
 
-    prt = x->first(ParameterHandling.flatten(transform(tc, x)))
-
-    sampler =  dynesty.NestedSampler(lklhd, prt, length(med); kwargs...)
+    sampler =  dynesty.NestedSampler(lklhd, prt, dimension(tc); kwargs...)
     sampler.run_nested(print_progress=progress)
     res = sampler.results
     samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
     logz = res["logz"][end]
     logzerr = res["logzerr"][end]
-    res = hcat(samples, weights)
-
-
     return _create_tv(unflatten, samples, weights), (logz=logz, logzerr=logzerr)
 end
 

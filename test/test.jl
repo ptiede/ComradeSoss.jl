@@ -18,5 +18,5 @@ dva = ROSESoss.extract_amps(obsavg)
 bl = ROSE.getdata(dva, :baselines)
 stations = unique(vcat(first.(bl), last.(bl)))
 
-cm = create_joint(ROSESoss.mring(N=1,), dlca, dcp)
-samples, weights, sch = dynesty_sampler(cm)
+cm = create_joint(ROSESoss.mringwfloor(N=2,), dlca, dcp)
+tv, stats = dynesty_sampler(cm; nlive=300)
