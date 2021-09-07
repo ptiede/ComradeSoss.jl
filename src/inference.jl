@@ -2,28 +2,27 @@ function create_joint(model,
                       ampobs::ROSE.EHTObservation{F,A};
                       fitgains=false
                       ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum}
-    u = ROSE.getdata(ampobs, :u)
-    v = ROSE.getdata(ampobs, :v)
+    uamp = ROSE.getdata(ampobs, :u)
+    vamp = ROSE.getdata(ampobs, :v)
     bl = ROSE.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    err = ROSE.getdata(ampobs, :error)
+    stations = Tuple(unique(vcat(s1,s2)))
+    gpriors = values(select(amppriors, stations))
+    erramp = ROSE.getdata(ampobs, :error)
     amps = ROSE.getdata(ampobs, :amp)
 
 
-    joint = model(u=u,
-                  v=v,
-                  s1=s1,
-                  s2=s2,
-                  err=err,
+    joint = va(
+                image=model,
+                gamps=gamps(stations=stations, spriors=gpriors,),
+                uamp=uamp,
+                vamp=vamp,
+                s1=s1,
+                s2=s2,
+                erramp=erramp
                 )
-    if fitgains
-        conditioned = (amp = amps,)
-    else
-        conditioned = (amp = amps,
-                       AP=1.0, AZ=1.0, JC=1.0, SM=1.0,
-                       AA=1.0, LM=1.0, SP=1.0, PV=1.0)
-    end
+    conditioned = (amp = amps,)
     return joint | conditioned
 end
 
@@ -37,13 +36,15 @@ Optionally, can fit for the gains. If true the gains are set to unity.
 function create_joint(model,
                       ampobs::ROSE.EHTObservation{F,A},
                       cpobs::ROSE.EHTObservation{F,P};
-                      fitgains=false
+                      amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1)
                       ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum,P<:ROSE.EHTClosurePhaseDatum}
     uamp = ROSE.getdata(ampobs, :u)
     vamp = ROSE.getdata(ampobs, :v)
     bl = ROSE.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
+    stations = Tuple(unique(vcat(s1,s2)))
+    gpriors = values(select(amppriors, stations))
     erramp = ROSE.getdata(ampobs, :error)
     amps = ROSE.getdata(ampobs, :amp)
 
@@ -56,7 +57,10 @@ function create_joint(model,
     errcp = ROSE.getdata(cpobs, :error)
     cps = ROSE.getdata(cpobs, :phase)
 
-    joint = model(uamp=uamp,
+    joint = vacp(
+                  image=model,
+                  gamps=gamps(stations=stations, spriors=gpriors,),
+                  uamp=uamp,
                   vamp=vamp,
                   s1=s1,
                   s2=s2,
@@ -69,13 +73,7 @@ function create_joint(model,
                   v3cp = v3cp,
                   errcp = errcp
                 )
-    if fitgains
-        conditioned = (amp = amps, cphase = cps,)
-    else
-        conditioned = (amp = amps, cphase = cps,
-                       AP=1.0, AZ=1.0, JC=1.0, SM=1.0,
-                       AA=1.0, LM=1.0, SP=1.0, PV=1.0)
-    end
+    conditioned = (amp = amps, cphase = cps,)
     return joint | conditioned
 end
 
@@ -99,7 +97,7 @@ function create_joint(model,
     visr = ROSE.getdata(visobs, :visr)
     visi = ROSE.getdata(visobs, :visi)
 
-    joint = model(u=u,
+    joint = vis(image = model, u=u,
                   v=v,
                   s1=s1,
                   s2=s2,
@@ -147,7 +145,9 @@ function create_joint(model,
     cp = getdata(dcp, :phase)
     errcp = getdata(dcp, :error)
 
-    m = model(u1a=u1a,v1a=v1a,
+    m = lcacp(
+              image=model,
+              u1a=u1a,v1a=v1a,
               u2a=u2a,v2a=v2a,
               u3a=u3a,v3a=v3a,
               u4a=u4a,v4a=v4a,
@@ -158,8 +158,8 @@ function create_joint(model,
               errcp=errcp
         )
 
-    conditioned = (lcamp = lcamp, cp = cp,)
-    return joint | conditioned
+    conditioned = (lcamp = lcamp, cphase = cp,)
+    return m | conditioned
 end
 
 
@@ -214,54 +214,34 @@ dynesty on it using the default options and static sampler.
 Returns a chain, state
 """
 function dynesty_sampler(lj::Soss.ConditionalModel; progress=true, kwargs...)
-    tc = hform(lj)
+    tc = ascube(lj)
     pr = Soss.prior(lj.model, Soss.observed(lj)...)
+    cpr = pr(argvals(lj))
+    base = transform(tc, fill(0.5, dimension(tc)))
+    med, unflatten = ParameterHandling.flatten(base)
     function lklhd(x::Vector{T}) where {T}
-        θ = transform(tc, x)
-        ℓ::T =  logdensity(lj, θ)::T - logdensity(pr, θ)::T
+        θ = unflatten(x)
+        ℓ::T =  logdensity(lj, θ)::T - logdensity(cpr, θ)::T
         return convert(T,isnan(ℓ) ? -1e10 : ℓ)
     end
 
-    sampler =  dynesty.NestedSampler(lklhd, prt, length(pnames); kwargs...)
+    prt = x->first(ParameterHandling.flatten(transform(tc, x)))
+
+    sampler =  dynesty.NestedSampler(lklhd, prt, length(med); kwargs...)
     sampler.run_nested(print_progress=progress)
     res = sampler.results
     samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
     logz = res["logz"][end]
     logzerr = res["logzerr"][end]
+    res = hcat(samples, weights)
 
-    vals = hcat(samples, weights)
-    chain = Chains(vals, [pnames..., :weights], Dict(:internals => ["weights"]),evidence=logz)
-    return chain, (logzerr=logzerr, ), pnames
+
+    return _create_tv(unflatten, samples, weights), (logz=logz, logzerr=logzerr)
 end
 
 
-
-
-
-
-"""
-    dynesty_sampler(logj; nlive=400, kwargs...)
-Takes a problem defined by the logj likelihood object and runs the
-dynesty on it using the default options and static sampler.
-
-Returns a chain, state
-"""
-function dynesty_sampler(lj; progress=true, kwargs...)
-    prt, pnames,pr = prior_transform(lj)
-
-
-    function lklhd(x::Vector{T}) where {T}
-        θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
-        var = merge(θ, gdata(lj))
-        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
-        return convert(T, isnan(ℓ) ? -1e10 : ℓ)
-    end
-
-    sampler =  dynesty.NestedSampler(lklhd, prt, lj.transform.dimension; kwargs...)
-    sampler.run_nested(print_progress=progress)
-    res = sampler.results
-    samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
-    logz = res["logz"][end]
-    logzerr = res["logzerr"][end]
-
+function _create_tv(unflatten, samples, weights)
+    ts = TupleVector([unflatten(Vector(x)) for x in eachrow(samples)])
+    tv = TupleVector(merge(getfield(ts, :data), (weights=weights,)))
+    return tv
 end

@@ -1,5 +1,7 @@
 module ROSESoss
 #Turn off precompilations because of GG bug https://github.com/cscherrer/Soss.jl/issues/267
+__precompile__(false)
+using HypercubeTransform
 
 using Reexport
 @reexport using Soss
@@ -7,7 +9,11 @@ using Reexport
 
 import Distributions as Dists
 using MeasureTheory
+using NamedTupleTools
 using NestedSamplers
+using NestedTuples
+using MacroTools
+
 using PyCall
 using Random
 using Requires
@@ -36,15 +42,16 @@ export extract_amps, extract_vis, extract_cphase,
        threaded_optimize,
        chi2, plot_mean, plot_samples, plot_vis_comp, plot_amp_comp,
        plot_cp_comp, plot_res_density,
-       SossModels, hform, transform,
+       ascube, transform,
        ehtim
 
 
 include("ehtim.jl")
 include("utility.jl")
+include("hypercube.jl")
 include("inference.jl")
 include("models.jl")
-using .SossModels
+
 
 
 function __init__()
