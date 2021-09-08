@@ -29,7 +29,7 @@ end
 
 function create_joint(model,
                       ampobs::ROSE.EHTObservation{F,A};
-                      fitgains=false
+                      amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1, SP=0.1)
                       ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum}
     u = ROSE.getdata(ampobs, :u)
     v = ROSE.getdata(ampobs, :v)
@@ -66,7 +66,7 @@ Optionally, can fit for the gains. If true the gains are set to unity.
 function create_joint(model,
                       ampobs::ROSE.EHTObservation{F,A},
                       cpobs::ROSE.EHTObservation{F,P};
-                      fitgains=false
+                      amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1, SP=0.1)
                       ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum,P<:ROSE.EHTClosurePhaseDatum}
     uamp = ROSE.getdata(ampobs, :u)
     vamp = ROSE.getdata(ampobs, :v)
@@ -116,7 +116,7 @@ Optionally, can fit for the gains. If true the gains are set to unity.
 """
 function create_joint(model,
                       visobs::ROSE.EHTObservation{F,A};
-                      fitgains=false
+                      amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1, SP=0.1)
                       ) where {F, A<:ROSE.EHTVisibilityDatum}
 
     u = ROSE.getdata(visobs, :u)
