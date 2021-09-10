@@ -176,6 +176,19 @@ end
     return lklhd, prt, tc, unflatten
 end
 
+
+abstract type AbstractSampler end
+abstract type AbstractNested <: AbstractSampler end
+
+Base.@kwdef struct DynestyStatic <: AbstractNested
+    nlive::Int = 500
+    bound::String = "multi"
+    sample::String = "auto"
+    walks::Int = 25
+    slices::Int = 5
+    max_move::Int = 100
+end
+
 """
     dynesty_sampler(logj; nlive=400, kwargs...)
 Takes a problem defined by the logj likelihood object and runs the
@@ -183,11 +196,20 @@ dynesty on it using the default options and static sampler.
 
 Returns a chain, state
 """
-function dynesty_sampler(lj::Soss.ConditionalModel; progress=true, kwargs...)
+function sample(dy::DynestyStatic, lj::Soss.ConditionalModel; progress=true, kwargs...)
     lklhd, prt, tc, unflatten = _split_conditional(lj)
 
-    sampler =  dynesty.NestedSampler(lklhd, prt, dimension(tc); kwargs...)
-    sampler.run_nested(print_progress=progress)
+    sampler =  dynesty.NestedSampler(lklhd,
+                                     prt,
+                                     dimension(tc);
+                                     nlive=dy.nlive,
+                                     bound=dy.bound,
+                                     sample=dy.sample,
+                                     walks = dy.walks,
+                                     slices = dy.slices,
+                                     max_move=dy.max_move
+                                    )
+    sampler.run_nested(;kwargs...)
     res = sampler.results
     samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
     logz = res["logz"][end]

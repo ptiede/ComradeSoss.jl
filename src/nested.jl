@@ -1,6 +1,12 @@
 using .NestedSamplers
 
-export nested_sampler
+export NestedStatic
+
+Base.@kwdef struct NestedStatic{B} <: AbstractNested
+    nlive::Int = 500
+    bounds::B=NestedSamplers.Bounds.MultiEllipsoid
+    proposal::Symbol=:auto
+end
 
 """
     nested_sampler(logj; nlive=400, kwargs...)
@@ -11,12 +17,15 @@ of the predefined models.
 
 Returns a chain, state, names
 """
-function nested_sampler(lj::Soss.ConditionalModel;nlive=400,dlogz=0.001*nlive, kwargs...)
+function sample(ns::NestedStatic ,lj::Soss.ConditionalModel; kwargs...)
     lklhd, prt, tc, unflatten = _split_conditional(lj)
 
-    sampler = Nested(dimension(tc), nlive)
+    sampler = Nested(dimension(tc),
+                     ns.nlive,
+                     bounds=ns.bounds,
+                     proposal=ns.proposal)
     model = NestedModel(lklhd, prt)
-    chain, state = sample(model, sampler; dlogz=dlogz, chain_type=Array)
+    chain, state = sample(model, sampler; chain_type=Array, kwargs...)
     logz = state[:logz]
     logzerr = state[:logzerr]
     logl = state[:logl]

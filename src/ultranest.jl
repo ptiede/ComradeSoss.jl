@@ -1,6 +1,8 @@
 using .UltraNest
 
-export ultranest_sampler
+export UltraReact
+
+struct UltraReact <: AbstractNested end
 
 """
     dynesty_sampler(logj; nlive=400, kwargs...)
@@ -9,27 +11,19 @@ dynesty on it using the default options and static sampler.
 
 Returns a chain, state
 """
-function ultranest_sampler(lj; kwargs...)
-    prt, pnames,pr = prior_transform(lj)
+function sample(::ULtraReact, lj::Soss.ConditionalModel; kwargs...)
+    lklhd, prt, tc, unflatten = _split_conditional(lj)
+
+    lklhdvec(X) = lklhd.(eachrow(X))
+    vpnames = String["p$i" for i in 1:dimension(tc)]
     prtransvec(X) = reduce(vcat, (x -> prt(x)').(eachrow(X)))
 
-
-    function lklhd(x::AbstractVector{T}) where {T}
-        θ = NamedTuple{pnames, NTuple{length(x),T}}(x)
-        var = merge(θ, gdata(lj))
-        ℓ =  logdensity(lj.model, var)::T - logdensity(pr, var)::T
-        return convert(T, isnan(ℓ) ? -1e10 : ℓ)
-    end
-    lklhdvec(X) = lklhd.(eachrow(X))
-    vpnames = [String.(pnames)...]
     sampler = ultranest.ReactiveNestedSampler(
                                         vpnames,
                                         lklhdvec,
                                         transform=prtransvec,
                                         vectorized=true
                                         )
-    sampler.stepsampler = ultranest.stepsampler.RegionSliceSampler(nsteps=400, adaptive_nsteps="move-distance")
-
     res = sampler.run(;kwargs...)
 
 
@@ -37,8 +31,8 @@ function ultranest_sampler(lj; kwargs...)
     samples, weights = res["weighted_samples"]["points"], res["weighted_samples"]["weights"]
     logz = res["logz"][end]
     logzerr = res["logzerr"][end]
+    logl = res["logl"][end]
 
-    vals = hcat(samples, weights)
-    chain = Chains(vals, [pnames..., :weights], Dict(:internals => ["weights"]),evidence=logz)
-    return chain, (logzerr=logzerr, ), pnames
+    stats = (logz=logz, logzerr=logzerr, logl=logl)
+    return _create_tv(unflatten, samples, weights), stats
 end

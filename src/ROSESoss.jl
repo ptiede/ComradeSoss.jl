@@ -17,7 +17,8 @@ using PyCall
 using Random
 using Requires
 using ParameterHandling
-using StatsBase: sample, median
+using StatsBase: median
+import StatsBase: sample
 using StructArrays
 using TupleVectors
 
@@ -37,7 +38,8 @@ const ehtim  = PyNULL()
 export extract_amps, extract_vis, extract_cphase,
        ObsChar, scandata,
        create_joint,
-       dynesty_sampler,
+       DynestyStatic,
+       sample,
        threaded_optimize,
        chi2, ehtim
 

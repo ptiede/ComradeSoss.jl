@@ -17,5 +17,9 @@ dcp = ROSESoss.extract_cphase(obsavg)
 dva = ROSESoss.extract_amps(obsavg)
 
 cm = create_joint(ROSESoss.mring(N=1,), dlca, dcp)
-tv, stats = nested_sampler(cm; nlive=200)
-tvd, statsd = dynesty_sampler(cm; nlive=200)
+dy = DynestyStatic(nlive=200)
+tvd, statsd = sample(dy, cm; print_progress=true)
+
+
+cmva = create_joint(ROSESoss.mring(N=1,), dva, dcp)
+tvd, statsd, sample(dy, cmva; print_progress=true)
