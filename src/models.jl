@@ -8,80 +8,102 @@ using MeasureTheory
 import Distributions as Dists
 
 
-gamps = @model stations, spriors begin
+gamps = @model spriors begin
     #Gain amps
-    σ ~ For(eachindex(stations)) do i
+    σ ~ For(eachindex(spriors)) do i
         Dists.LogNormal(0.0, spriors[i])
     end
-    return NamedTuple{stations}(σ)
+    return σ
 end
 
 gphases = @model stations begin
     σ ~ Dists.truncated(Dists.Normal(0.0, π), -π, π) |> iid(length(stations))
-    return NamedTuple{stations}(σ)
+    return σ
 end
 
-va = @model image, gamps, uamp, vamp, s1, s2, erramp begin
+function amp_gains(img, g1,g2, u, v)
+    return g1*g2*ROSE.visibility_amplitude(img, u, v)
+end
+
+function _vamps(img, g, stations, s1, s2, uamp, vamp)
+    vm = similar(uamp)
+    for i in eachindex(uamp)
+        vm[i] = amp_gains(img,
+                            g[stations[s1[i]]],
+                            g[stations[s2[i]]],
+                            uamp[i],
+                            vamp[i]
+                            )
+    end
+    return vm
+end
+
+
+va = @model image, gamps, uamp, vamp, stations, s1, s2, erramp begin
     img ~ image
     g ~ gamps
-    amp ~ For(eachindex(uamp,vamp, erramp)) do i
-            g1 = g[s1[i]]
-            g2 = g[s2[i]]
-            mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
-            Dists.Normal(mamp, erramp[i])
-    end
+    vm = _vamps(img, g, stations, s1, s2, uamp, vamp)
+    amp ~ Dists.MvNormal(vm, erramp)
 end
 
-vacp = @model image, gamps, uamp, vamp, s1, s2, erramp,
+vacp = @model image, gamps, uamp, vamp, stations, s1, s2, erramp,
                u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
 
     img ~ image
     g ~ gamps
-    amp ~ For(eachindex(uamp,vamp, erramp)) do i
-            g1 = g[s1[i]]
-            g2 = g[s2[i]]
-            mamp = g1*g2*ROSE.visibility_amplitude(img, uamp[i], vamp[i])
-            Dists.Normal(mamp, erramp[i])
-    end
+    vm = _vamps(img, g, stations, s1, s2, uamp, vamp)
+    amp ~ Dists.MvNormal(vm, erramp)
 
-    cphase ~ For(eachindex(u1cp, errcp)) do i
-        mphase = ROSE.closure_phase(img,
-                                    u1cp[i],
-                                    v1cp[i],
-                                    u2cp[i],
-                                    v2cp[i],
-                                    u3cp[i],
-                                    v3cp[i]
-                                    )
-        ROSE.CPVonMises(mphase, errcp[i])
+    cp = ROSE.closure_phase.(Ref(img),
+                            u1cp,
+                            u2cp,
+                            u3cp,
+                            v1cp,
+                            v2cp,
+                            v3cp)
+
+    cphase ~ For(eachindex(cp)) do i
+        ROSE.CPVonMises(cp[i], errcp[i])
     end
 
 end
 
+function vis_gains(img, ga1,ga2, gp1,gp2, u, v)
+    Δθ = gp1 - gp2
+    s,c = sincos(Δθ)
+    g1 = ga1
+    g2 = ga2
+    vis = visibility(img, u, v)
+    vr = g1*g2*(real(vis)*c + imag(vis)*s)
+    vi = g1*g2*(-real(vis)*s + imag(vis)*c)
+    return vr+vi*im
+end
 
-vis = @model image, gamps, gphase, u, v, s1, s2, error begin
+function _vism(img, ga, gp, stations, s1, s2, u, v)
+    vm = similar(u,Complex{eltype(u)})
+    for i in eachindex(u)
+        vm[i] = vis_gains(img,
+                          ga[stations[s1[i]]],
+                          ga[stations[s2[i]]],
+                          gp[stations[s1[i]]],
+                          gp[stations[s2[i]]],
+                          u[i],
+                          v[i]
+                        )
+    end
+    return vm
+end
+
+
+
+vis = @model image, gamps, gphases, u, v, stations, s1, s2, error begin
     img ~ image
     ga ~ gamps
     gp ~ gphases
-    vis = ROSE.visibility.(Ref(img), u,v)
+    vis = _vism(img, ga, gp, stations, s1, s2, u, v)
 
-    visr ~ For(eachindex(u, v)) do i
-        Δθ = gp[s1[i]] - gp[s2[i]]
-        s,c = sincos(Δθ)
-        g1 = ga[s1[i]]
-        g2 = ga[s2[i]]
-        mamp = g1*g2*(real(vis[i])*c + imag(vis[i])*s)
-        Dists.Normal(mamp, err[i])
-    end
-
-    visi ~ For(eachindex(u, v)) do i
-        Δθ = gp[s1[i]] - gp[s2[i]]
-        s,c = sincos(Δθ)
-        g1 = ga[s1[i]]
-        g2 = ga[s2[i]]
-        mamp = g1*g2*(-real(vis[i])*s + imag(vis[i])*c)
-        Dists.Normal(mamp, err[i])
-    end
+    visr ~ Dists.MvNormal(real.(vis), err)
+    visi ~ Dists.MvNormal(imag.(vis), err)
 
 end
 
@@ -114,6 +136,30 @@ lcacp = @model image,
     end
 end
 
+mringwb = @model N, M, fov begin
+    diam ~ Dists.Uniform(25.0, 85.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    ma ~ Dists.Uniform(0.0, 0.5) |> iid(N)
+    mp ~ Dists.Uniform(-1π, 1π) |> iid(N)
+    α = ma.*cos.(mp)
+    β = ma.*sin.(mp)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+    f ~ Dists.Uniform(0.0, 5.0)
+    mring = renormed(ROSE.MRing{N}(rad, α, β), f-f*floor)
+    rimg = smoothed(mring,σ)
+
+    coeff ~ Dists.Dirichlet(fill(M*M, 1.0))
+    ϵ ~ Dists.LogNormal(0.0, 0.1)
+    bimg = renormed(stretched(ROSE.RImage(coeff, ROSE.SqExpKernel(ϵ)),fov,fov), f*floor)
+    img = rimg+bimg
+    return img
+end
+
 mring = @model N begin
     diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
@@ -126,7 +172,7 @@ mring = @model N begin
     β = ma.*sin.(mp)
 
     f ~ Dists.Uniform(0.0, 5.0)
-    mring = renormed(ROSE.MRing(rad, Tuple(α), Tuple(β)), f)
+    mring = renormed(ROSE.MRing{N}(rad, α, β), f)
     img = smoothed(mring,σ)
     return img
 end
