@@ -8,29 +8,29 @@ using MeasureTheory
 import Distributions as Dists
 
 
-gamps = @model spriors begin
+gamps = @model stations, spriors begin
     #Gain amps
     σ ~ For(eachindex(spriors)) do i
         Dists.LogNormal(0.0, spriors[i])
     end
-    return σ
+    return NamedTuple{stations}(σ)
 end
 
 gphases = @model stations begin
     σ ~ Dists.truncated(Dists.Normal(0.0, π), -π, π) |> iid(length(stations))
-    return σ
+    return NamedTuple{stations}(σ)
 end
 
 function amp_gains(img, g1,g2, u, v)
     return g1*g2*ROSE.visibility_amplitude(img, u, v)
 end
 
-function _vamps(img, g, stations, s1, s2, uamp, vamp)
+function _vamps(img, g, s1, s2, uamp, vamp)
     vm = similar(uamp)
     for i in eachindex(uamp)
         vm[i] = amp_gains(img,
-                            g[stations[s1[i]]],
-                            g[stations[s2[i]]],
+                            g[s1[i]],
+                            g[s2[i]],
                             uamp[i],
                             vamp[i]
                             )
@@ -39,19 +39,19 @@ function _vamps(img, g, stations, s1, s2, uamp, vamp)
 end
 
 
-va = @model image, gamps, uamp, vamp, stations, s1, s2, erramp begin
+va = @model image, gamps, uamp, vamp, s1, s2, erramp begin
     img ~ image
     g ~ gamps
-    vm = _vamps(img, g, stations, s1, s2, uamp, vamp)
+    vm = _vamps(img, g, s1, s2, uamp, vamp)
     amp ~ Dists.MvNormal(vm, erramp)
 end
 
-vacp = @model image, gamps, uamp, vamp, stations, s1, s2, erramp,
+vacp = @model image, gamps, uamp, vamp, s1, s2, erramp,
                u1cp, v1cp, u2cp, v2cp, u3cp, v3cp, errcp begin
 
     img ~ image
     g ~ gamps
-    vm = _vamps(img, g, stations, s1, s2, uamp, vamp)
+    vm = _vamps(img, g, s1, s2, uamp, vamp)
     amp ~ Dists.MvNormal(vm, erramp)
 
     cp = ROSE.closure_phase.(Ref(img),
@@ -79,14 +79,14 @@ function vis_gains(img, ga1,ga2, gp1,gp2, u, v)
     return vr+vi*im
 end
 
-function _vism(img, ga, gp, stations, s1, s2, u, v)
+function _vism(img, ga, gp, s1, s2, u, v)
     vm = similar(u,Complex{eltype(u)})
     for i in eachindex(u)
         vm[i] = vis_gains(img,
-                          ga[stations[s1[i]]],
-                          ga[stations[s2[i]]],
-                          gp[stations[s1[i]]],
-                          gp[stations[s2[i]]],
+                          ga[s1[i]],
+                          ga[s2[i]],
+                          gp[s1[i]],
+                          gp[s2[i]],
                           u[i],
                           v[i]
                         )
@@ -96,11 +96,11 @@ end
 
 
 
-vis = @model image, gamps, gphases, u, v, stations, s1, s2, error begin
+vis = @model image, gamps, gphases, u, v, s1, s2, error begin
     img ~ image
     ga ~ gamps
     gp ~ gphases
-    vis = _vism(img, ga, gp, stations, s1, s2, u, v)
+    vis = _vism(img, ga, gp, s1, s2, u, v)
 
     visr ~ Dists.MvNormal(real.(vis), err)
     visi ~ Dists.MvNormal(imag.(vis), err)
@@ -136,6 +136,7 @@ lcacp = @model image,
     end
 end
 
+#=
 mringwb = @model N, M, fov begin
     diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
@@ -159,7 +160,7 @@ mringwb = @model N, M, fov begin
     img = rimg+bimg
     return img
 end
-
+=#
 mring = @model N begin
     diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)

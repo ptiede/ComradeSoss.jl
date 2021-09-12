@@ -7,21 +7,19 @@ function create_joint(model,
     bl = ROSE.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    st = Tuple(unique(vcat(s1,s2)))
-    gpriors = values(select(amppriors, st))
-    stations = namedtuple(keys(select(amppriors, st)), 1:length(gpriors))
+    stations = Tuple(unique(vcat(s1,s2)))
+    gpriors = values(select(amppriors, stations))
     erramp = ROSE.getdata(ampobs, :error)
     amps = ROSE.getdata(ampobs, :amp)
 
 
     joint = va(
                 image=model,
-                gamps=gamps(spriors=gpriors,),
+                gamps=gamps(spriors=gpriors,stations=stations),
                 uamp=uamp,
                 vamp=vamp,
                 s1=s1,
                 s2=s2,
-                stations=stations,
                 erramp=erramp
                 )
     conditioned = (amp = amps,)
@@ -45,10 +43,8 @@ function create_joint(model,
     bl = ROSE.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    st = Tuple(unique(vcat(s1,s2)))
-    gpriors = values(select(amppriors, st))
-    stations = namedtuple(keys(select(amppriors, st)), 1:length(gpriors))
-    println(stations)
+    stations = Tuple(unique(vcat(s1,s2)))
+    gpriors = values(select(amppriors, stations))
     erramp = ROSE.getdata(ampobs, :error)
     amps = ROSE.getdata(ampobs, :amp)
 
@@ -66,7 +62,6 @@ function create_joint(model,
                   gamps=gamps(stations=stations, spriors=gpriors,),
                   uamp=uamp,
                   vamp=vamp,
-                  stations=stations,
                   s1=s1,
                   s2=s2,
                   erramp=erramp,
@@ -98,9 +93,8 @@ function create_joint(model,
     bl = ROSE.getdata(visobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    st = Tuple(unique(vcat(s1,s2)))
-    gpriors = values(select(amppriors, st))
-    stations = namedtuple(keys(select(amppriors, st)), 1:length(gpriors))
+    stations = Tuple(unique(vcat(s1,s2)))
+    gpriors = values(select(amppriors, stations))
     err = ROSE.getdata(visobs, :error)
     visr = ROSE.getdata(visobs, :visr)
     visi = ROSE.getdata(visobs, :visi)
@@ -112,7 +106,6 @@ function create_joint(model,
                 v=v,
                 s1=s1,
                 s2=s2,
-                stations=stations,
                 err=err
                 )
     conditioned = (visr = visr, visi = visi,)
