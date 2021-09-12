@@ -56,10 +56,10 @@ vacp = @model image, gamps, uamp, vamp, s1, s2, erramp,
 
     cp = ROSE.closure_phase.(Ref(img),
                             u1cp,
-                            u2cp,
-                            u3cp,
                             v1cp,
+                            u2cp,
                             v2cp,
+                            u3cp,
                             v3cp)
 
     cphase ~ For(eachindex(cp)) do i

@@ -7,15 +7,16 @@ function create_joint(model,
     bl = ROSE.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    stations = Tuple(unique(vcat(s1,s2)))
-    gpriors = values(select(amppriors, stations))
+    st = Tuple(unique(vcat(s1,s2)))
+    gpriors = select(amppriors, st)
+    spriors = values(gpriors)
     erramp = ROSE.getdata(ampobs, :error)
     amps = ROSE.getdata(ampobs, :amp)
 
 
     joint = va(
                 image=model,
-                gamps=gamps(spriors=gpriors,stations=stations),
+                gamps=gamps(spriors=spriors,stations=stations),
                 uamp=uamp,
                 vamp=vamp,
                 s1=s1,
@@ -43,8 +44,10 @@ function create_joint(model,
     bl = ROSE.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    stations = Tuple(unique(vcat(s1,s2)))
-    gpriors = values(select(amppriors, stations))
+    st = Tuple(unique(vcat(s1,s2)))
+    gpriors = select(amppriors, st)
+    spriors = values(gpriors)
+    stations = keys(gpriors)
     erramp = ROSE.getdata(ampobs, :error)
     amps = ROSE.getdata(ampobs, :amp)
 
@@ -59,7 +62,7 @@ function create_joint(model,
 
     joint = vacp(
                   image=model,
-                  gamps=gamps(stations=stations, spriors=gpriors,),
+                  gamps=gamps(stations=stations, spriors=spriors,),
                   uamp=uamp,
                   vamp=vamp,
                   s1=s1,
@@ -93,14 +96,15 @@ function create_joint(model,
     bl = ROSE.getdata(visobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
-    stations = Tuple(unique(vcat(s1,s2)))
-    gpriors = values(select(amppriors, stations))
+    st = Tuple(unique(vcat(s1,s2)))
+    gpriors = select(amppriors, st)
+    spriors = values(gpriors)
     err = ROSE.getdata(visobs, :error)
     visr = ROSE.getdata(visobs, :visr)
     visi = ROSE.getdata(visobs, :visi)
 
     joint = vis(image = model,
-                gamps=gamps(spriors=gpriors),
+                gamps=gamps(spriors=spriors, stations=stations),
                 gphases=gphases(stations=stations),
                 u=u,
                 v=v,
