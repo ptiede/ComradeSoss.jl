@@ -193,7 +193,7 @@ mringwfloor = @model N begin
     floor ~ Dists.Uniform(0.0, 1.0)
     f ~ Dists.Uniform(0.0, 5.0)
 
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f)
+    mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
     disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
     img = smoothed(mring+disk,σ)
     return img
@@ -246,7 +246,7 @@ smringwfloor = @model N begin
     floor ~ Dists.Uniform(0.0, 1.0)
     f ~ Dists.Uniform(0.0, 5.0)
 
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f)
+    mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
     disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
     img = smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ)
     return img
