@@ -193,6 +193,37 @@ Base.@kwdef struct DynestyStatic <: AbstractNested
     max_move::Int = 100
 end
 
+Base.@kwdef struct DynestyDynamic <: AbstractNested
+    bound::String="multi"
+    sample::String="auto"
+    walks::Int = 25
+    slices::Int = 5
+    max_move::Int = 100
+end
+
+function sample(dy::DynestyDynamic, lj::Soss.ConditionalModel; progress=true, kwargs...)
+    lklhd, prt, tc, unflatten = _split_conditional(lj)
+
+    sampler =  dynesty.dynamicsampler.DynamicSampler(lklhd,
+                                     prt,
+                                     dimension(tc);
+                                     bound=dy.bound,
+                                     sample=dy.sample,
+                                     walks = dy.walks,
+                                     slices = dy.slices,
+                                     max_move=dy.max_move
+                                    )
+    sampler.run_nested(;kwargs...)
+    res = sampler.results
+    samples, weights = res["samples"], exp.(res["logwt"] .- res["logz"][end])
+    logz = res["logz"][end]
+    logzerr = res["logzerr"][end]
+    logl = res["logl"][end]
+    stats = (logz=logz, logzerr=logzerr, logl=logl)
+    return _create_tv(unflatten, samples, weights), stats
+end
+
+
 """
     dynesty_sampler(logj; nlive=400, kwargs...)
 Takes a problem defined by the logj likelihood object and runs the
