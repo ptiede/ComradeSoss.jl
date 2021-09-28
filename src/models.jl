@@ -199,6 +199,29 @@ mringwfloor = @model N begin
     return img
 end
 
+mringwgfloor = @model N begin
+    diam ~ Dists.Uniform(25.0, 85.0)
+    fwhm ~ Dists.Uniform(1.0, 40.0)
+    rad = diam/2
+    σ = fwhm/fwhmfac
+
+    ma ~ Dists.Uniform(0.0, 0.5) |> iid(N)
+    mp ~ Dists.Uniform(-1π, 1π) |> iid(N)
+    α = ma.*cos.(mp)
+    β = ma.*sin.(mp)
+
+    #Fraction of floor flux
+    floor ~ Dists.Uniform(0.0, 1.0)
+    f ~ Dists.Uniform(0.0, 5.0)
+    dg ~ Dists.Uniform(10.0, 80.0)
+    rg = dg/2
+    mring = smoothed(renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor)), σ)
+    g = renormed(stretched(ROSE.Gaussian(), rg, rg), f*floor)
+    img = mring + g
+    return img
+end
+
+
 smring = @model N begin
     diam ~ Dists.Uniform(25.0, 85.0)
     fwhm ~ Dists.Uniform(1.0, 40.0)
