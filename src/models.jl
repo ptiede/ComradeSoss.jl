@@ -150,7 +150,7 @@ mringwb = @model N, M, fov begin
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
-    f ~ Dists.Uniform(0.0, 5.0)
+    f ~ Dists.Uniform(0.8, 1.2)
     mring = renormed(ROSE.MRing{N}(rad, α, β), f-f*floor)
     rimg = smoothed(mring,σ)
 
@@ -172,7 +172,7 @@ mring = @model N begin
     α = ma.*cos.(mp)
     β = ma.*sin.(mp)
 
-    f ~ Dists.Uniform(0.0, 5.0)
+    f ~ Dists.Uniform(0.8, 1.2)
     mring = renormed(ROSE.MRing{N}(rad, α, β), f)
     img = smoothed(mring,σ)
     return img
@@ -191,7 +191,7 @@ mringwfloor = @model N begin
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
-    f ~ Dists.Uniform(0.0, 5.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
     disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
@@ -212,8 +212,8 @@ mringwgfloor = @model N begin
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
-    f ~ Dists.Uniform(0.0, 5.0)
-    dg ~ Dists.Uniform(10.0, 80.0)
+    f ~ Dists.Uniform(0.8, 1.2)
+    dg ~ Dists.Uniform(10.0, 100.0)
     rg = dg/2
     mring = smoothed(renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor)), σ)
     g = renormed(stretched(ROSE.Gaussian(), rg, rg), f*floor)
@@ -239,7 +239,7 @@ smring = @model N begin
     scx = 1/sqrt(1-τ)
     scy = sqrt(1-τ)
 
-    f ~ Dists.Uniform(0.0, 5.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     mring = renormed(ROSE.MRing{N}(rad, α, β), f)
     img = smoothed(rotated(stretched(mring,scx,scy),ξτ),σ)
@@ -267,7 +267,7 @@ smringwfloor = @model N begin
 
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
-    f ~ Dists.Uniform(0.0, 5.0)
+    f ~ Dists.Uniform(0.8, 1.2)
 
     mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
     disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
