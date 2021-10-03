@@ -213,8 +213,8 @@ mringwgfloor = @model N, fmin, fmax begin
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
     f ~ Dists.Uniform(fmin, fmax)
-    ϵg ~ Dists.Uniform(1.0, 10.0)
-    rg = diam*ϵg/2*fwhmfac/2
+    dg ~ Dists.Uniform(20.0, 200.0)
+    rg = dg/fwhmfac
     mring = smoothed(renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor)), σ)
     g = renormed(stretched(ROSE.Gaussian(), rg, rg), f*floor)
     img = mring + g
