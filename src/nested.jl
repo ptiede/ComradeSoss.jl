@@ -9,7 +9,7 @@ Base.@kwdef struct NestedStatic{B} <: AbstractNested
 end
 
 """
-    nested_sampler(logj; nlive=400, kwargs...)
+    sample(ns::NestedStatic, logj; nlive=400, kwargs...)
 Takes a problem defined by the logj likelihood object and runs the
 NestedSampler.jl nested sampler algorithm on it. This constructs
 the approporate likliehood and prior transform for you if you stick to one
@@ -17,7 +17,7 @@ of the predefined models.
 
 Returns a chain, state, names
 """
-function sample(ns::NestedStatic ,lj::Soss.ConditionalModel; kwargs...)
+function sample(ns::NestedStatic, lj::Soss.ConditionalModel; kwargs...)
     lklhd, prt, tc, unflatten = _split_conditional(lj)
 
     sampler = Nested(dimension(tc),

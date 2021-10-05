@@ -39,7 +39,7 @@ export extract_amps, extract_vis, extract_cphase,
        ObsChar, scandata,
        create_joint,
        DynestyStatic,
-       sample,
+       sample, optimize,
        threaded_optimize,
        chi2, ehtim
 
