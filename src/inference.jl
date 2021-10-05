@@ -181,6 +181,24 @@ end
 end
 
 
+abstract type AbstractOptimizer end
+
+"""
+    optimize(opt::AbstractOptimizer, cm::Soss.ConditionalModel)
+Optimize a Soss conditional model to find the MAP. Usually this
+requires bringing in other packages to load. For example to use
+BlackBoxOptim you would do
+
+```julia
+using ROSESoss, BlackBoxOptim
+
+opt = BBO()
+cm = ... #create log joint
+x, logMAP = optimize(opt, cm)
+```
+"""
+function optimize end
+
 abstract type AbstractSampler end
 abstract type AbstractNested <: AbstractSampler end
 
