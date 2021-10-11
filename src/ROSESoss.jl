@@ -61,6 +61,7 @@ function __init__()
     @require UltraNest="6822f173-b0be-4018-9ee2-28bf56348d09" include("ultranest.jl")
     @require NestedSamplers="41ceaf6f-1696-4a54-9b49-2e7a9ec3782e" include("nested.jl")
     @require BlackBoxOptim="a134a8b2-14d6-55f6-9291-3336d3ab0209" include("bboptim.jl")
+    @require Metaheuristics="bcdb8e00-2c21-11e9-3065-2b553b22f898" include("metaheuristics.jl")
 end
 
 
