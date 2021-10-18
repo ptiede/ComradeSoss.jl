@@ -7,7 +7,8 @@ using Reexport
 @reexport using Soss
 @reexport using ROSE
 
-import Distributions as Dists
+import Distributions
+const Dists = Distributions
 using MeasureTheory
 using NamedTupleTools
 using NestedTuples

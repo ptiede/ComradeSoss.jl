@@ -4,8 +4,10 @@ using Soss: ConditionalModel, getmoduletypencoding, argvals, observations,
              loadvals, getntkeys, buildSource, isleaf, _unwrap_type
 using NestedTuples
 using MacroTools
-import MeasureTheory as MT
-import Distributions as Dists
+import MeasureTheory
+const MT = MeasureTheory
+import Distributions
+const Dists = Distributions
 
 
 
