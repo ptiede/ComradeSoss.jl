@@ -114,7 +114,7 @@ lcacp = @model image,
                u1p,v1p,u2p,v2p,u3p,v3p,errcp begin
     img ~ image
 
-    mlca = ROSE.logclosure_amplitude(Ref(img), u1a, v1a,
+    mlca = ROSE.logclosure_amplitude.(Ref(img), u1a, v1a,
                                                u2a, v2a,
                                                u3a, v3a,
                                                u4a, v4a,
