@@ -120,7 +120,7 @@ lcacp = @model image,
                                                u4a, v4a,
                                     )
     lcamp ~ For(eachindex(mlca,errcamp)) do i
-        Dists.Normal(lcam[i], errcamp[i])
+        Dists.Normal(mlca[i], errcamp[i])
     end
 
     mcp = ROSE.closure_phase.(Ref(img),
