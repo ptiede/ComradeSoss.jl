@@ -41,11 +41,11 @@ function NLoptim(lj::Soss.ConditionalModel; alg=:LD_LBFGS, xtol=1e-8, maxeval::I
 
     srange = [(-7.0,7.0) for _ in 1:dim]
     nlopt = NLopt.Opt(alg, length(srange))
-    lower_bounds!(nlopt, first.(srange))
-    upper_bounds!(nlopt, last.(srange))
-    max_objective!(nlopt, gradf!)
-    xtol_rel!(nlopt, xtol)
-    maxeval!(nlopt, maxeval)
+    NLopt.lower_bounds!(nlopt, first.(srange))
+    NLopt.upper_bounds!(nlopt, last.(srange))
+    NLopt.max_objective!(nlopt, gradf!)
+    NLopt.xtol_rel!(nlopt, xtol)
+    NLopt.maxeval!(nlopt, maxeval)
     return NLoptim(nlopt, grado, tc, dim)
 end
 
