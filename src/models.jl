@@ -132,7 +132,7 @@ lcacp = @model image,
                              v3cp)
 
     cphase ~ For(eachindex(mcp, errcp)) do i
-        ROSE.CPVonMises(mphase, errcp[i])
+        ROSE.CPVonMises(mcp[i], errcp[i])
     end
 end
 
