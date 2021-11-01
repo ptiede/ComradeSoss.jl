@@ -15,6 +15,7 @@ function optimize(opt::BBO, lj::Soss.ConditionalModel)
     lowflat, unflatten = ParameterHandling.flatten(lower)
 
     bounds = [(lowflat[i], upflat[i]) for i in eachindex(upflat)]
+    println(bounds)
     f(x) = -logdensity(lj, unflatten(x))
     res = bboptimize(f, SearchRange=bounds, MaxFuncEvals=opt.maxevals, TraceMode=opt.tracemode)
     return unflatten(best_candidate(res)), -best_fitness(res)

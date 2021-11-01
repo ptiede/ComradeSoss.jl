@@ -12,7 +12,7 @@ const Dists = Distributions
 gamps = @model stations, spriors begin
     #Gain amps
     σ ~ For(eachindex(spriors)) do i
-        Dists.LogNormal(0.0, spriors[i])
+        Dists.LogNormal(zero(spriors[i]), spriors[i])
     end
     return NamedTuple{stations}(σ)
 end
@@ -27,7 +27,7 @@ function amp_gains(img, g1,g2, u, v)
 end
 
 function _vamps(img, g, s1, s2, uamp, vamp)
-    vm = similar(uamp)
+    vm = similar(uamp, eltype(g))
     for i in eachindex(uamp)
         vm[i] = amp_gains(img,
                             g[s1[i]],
@@ -114,25 +114,24 @@ lcacp = @model image,
                u1p,v1p,u2p,v2p,u3p,v3p,errcp begin
     img ~ image
 
-    lcamp ~ For(eachindex(errcamp)) do i
-        ca = ROSE.logclosure_amplitude(img,
-                                      u1a[i], v1a[i],
-                                      u2a[i], v2a[i],
-                                      u3a[i], v3a[i],
-                                      u4a[i], v4a[i],
+    mlca = ROSE.logclosure_amplitude(Ref(img), u1a, v1a,
+                                               u2a, v2a,
+                                               u3a, v3a,
+                                               u4a, v4a,
                                     )
-        Dists.Normal(ca, errcamp[i])
+    lcamp ~ For(eachindex(mlca,errcamp)) do i
+        Dists.Normal(lcam[i], errcamp[i])
     end
 
-    cphase ~ For(eachindex(u1cp, errcp)) do i
-        mphase = ROSE.closure_phase(img,
-                                    u1cp[i],
-                                    v1cp[i],
-                                    u2cp[i],
-                                    v2cp[i],
-                                    u3cp[i],
-                                    v3cp[i]
-                                )
+    mcp = ROSE.closure_phase.(Ref(img),
+                             u1cp,
+                             v1cp,
+                             u2cp,
+                             v2cp,
+                             u3cp,
+                             v3cp)
+
+    cphase ~ For(eachindex(mcp, errcp)) do i
         ROSE.CPVonMises(mphase, errcp[i])
     end
 end

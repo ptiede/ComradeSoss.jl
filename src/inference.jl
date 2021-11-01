@@ -16,7 +16,7 @@ function create_joint(model,
 
     joint = va(
                 image=model,
-                gamps=gamps(spriors=spriors,stations=stations),
+                gamps=gamps(spriors=spriors,stations=st),
                 uamp=uamp,
                 vamp=vamp,
                 s1=s1,
@@ -200,6 +200,7 @@ x, logMAP = optimize(opt, cm)
 function optimize end
 
 abstract type AbstractSampler end
+abstract type AbstractMCMC end
 abstract type AbstractNested <: AbstractSampler end
 
 Base.@kwdef struct DynestyStatic <: AbstractNested
@@ -219,7 +220,7 @@ Base.@kwdef struct DynestyDynamic <: AbstractNested
     max_move::Int = 100
 end
 
-function sample(dy::DynestyDynamic, lj::Soss.ConditionalModel; progress=true, kwargs...)
+function StatsBase.sample(dy::DynestyDynamic, lj::Soss.ConditionalModel; progress=true, kwargs...)
     lklhd, prt, tc, unflatten = _split_conditional(lj)
 
     sampler =  dynesty.dynamicsampler.DynamicSampler(lklhd,
@@ -249,7 +250,7 @@ dynesty on it using the default options and static sampler.
 
 Returns a chain, state
 """
-function sample(dy::DynestyStatic, lj::Soss.ConditionalModel; progress=true, kwargs...)
+function StatsBase.sample(dy::DynestyStatic, lj::Soss.ConditionalModel; progress=true, kwargs...)
     lklhd, prt, tc, unflatten = _split_conditional(lj)
 
     sampler =  dynesty.NestedSampler(lklhd,

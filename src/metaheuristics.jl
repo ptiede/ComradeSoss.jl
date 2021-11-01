@@ -2,7 +2,7 @@ import .Metaheuristics
 const MH = Metaheuristics
 
 Base.@kwdef struct MetaH{T<:MH.Algorithm} <: ROSESoss.AbstractOptimizer
-    alg::T=ECA(options=Options(f_calls_limit=10^5))
+    alg::T=ECA(options=MH.Options(f_calls_limit=10^5))
 end
 
 function optimize(opt::MetaH, lj::Soss.ConditionalModel)

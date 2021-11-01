@@ -11,7 +11,7 @@ dynesty on it using the default options and static sampler.
 
 Returns a chain, state
 """
-function ROSESoss.sample(::UltraReact, lj::Soss.ConditionalModel; kwargs...)
+function StatsBase.sample(::UltraReact, lj::Soss.ConditionalModel; kwargs...)
     lklhd, prt, tc, unflatten = ROSESoss._split_conditional(lj)
 
     lklhdvec(X) = lklhd.(eachrow(X))

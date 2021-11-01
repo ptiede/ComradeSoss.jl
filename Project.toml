@@ -4,11 +4,15 @@ authors = ["ptiede <ptiede91@gmail.com> and contributors"]
 version = "0.1.1"
 
 [deps]
+AdvancedHMC = "0bf59076-c3b1-5ca4-86bd-e02cd72cde3d"
+DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 HypercubeTransform = "9ec9aee3-0fd3-44c2-8e61-a50acc66f3c8"
 MLStyle = "d8e11817-5142-5d16-987a-aa16d5891078"
 MacroTools = "1914dd2f-81c6-5fcd-8719-6d5c9610ff09"
 MeasureTheory = "eadaa1a4-d27c-401d-8699-e962e1bbc33b"
+NLopt = "76087f3c-5699-56af-9a33-bf431cd00edd"
 NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 NestedTuples = "a734d2a7-8d68-409b-9419-626914d4061d"
 ParameterHandling = "2412ca09-6db7-441c-8e3a-88d5709968c5"

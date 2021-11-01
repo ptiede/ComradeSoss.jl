@@ -17,7 +17,7 @@ of the predefined models.
 
 Returns a chain, state, names
 """
-function sample(ns::NestedStatic, lj::Soss.ConditionalModel; kwargs...)
+function StatsBase.sample(ns::NestedStatic, lj::Soss.ConditionalModel; kwargs...)
     lklhd, prt, tc, unflatten = _split_conditional(lj)
 
     sampler = Nested(dimension(tc),

@@ -19,7 +19,7 @@ using Random
 using Requires
 using ParameterHandling
 using StatsBase: median
-import StatsBase: sample
+using StatsBase
 using StructArrays
 using TupleVectors
 
@@ -50,15 +50,14 @@ include("utility.jl")
 include("hypercube.jl")
 include("inference.jl")
 include("models.jl")
-
+include("grads.jl")
+include("nlopt.jl")
+include("hmc.jl")
 
 
 function __init__()
     copy!(dynesty, pyimport("dynesty"))
     copy!(ehtim, pyimport("ehtim"))
-    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
-        @require StatsPlots="f3b207a7-027a-5e70-b257-86293d7955fd" include("plots.jl")
-    end
     @require UltraNest="6822f173-b0be-4018-9ee2-28bf56348d09" include("ultranest.jl")
     @require NestedSamplers="41ceaf6f-1696-4a54-9b49-2e7a9ec3782e" include("nested.jl")
     @require BlackBoxOptim="a134a8b2-14d6-55f6-9291-3336d3ab0209" include("bboptim.jl")
