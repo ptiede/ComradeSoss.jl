@@ -14,7 +14,8 @@ gamps = @model stations, spriors begin
     σ ~ For(eachindex(spriors)) do i
         Dists.LogNormal(zero(spriors[i]), spriors[i])
     end
-    return NamedTuple{stations}(σ)
+    g = NamedTuple{stations}(σ)
+    return g
 end
 
 gphases = @model stations begin
@@ -119,9 +120,10 @@ lcacp = @model image,
                                                u3a, v3a,
                                                u4a, v4a,
                                     )
-    lcamp ~ For(eachindex(mlca,errcamp)) do i
-        Dists.Normal(mlca[i], errcamp[i])
-    end
+    lcamp ~ Dists.MvNormal(mlca, errcamp)
+    #For(eachindex(mlca,errcamp)) do i
+    #    Dists.Normal(mlca[i], errcamp[i])
+    #end
 
     mcp = ROSE.closure_phase.(Ref(img),
                              u1cp,
@@ -130,7 +132,7 @@ lcacp = @model image,
                              v2cp,
                              u3cp,
                              v3cp)
-
+    #cphase ~ Dists.MvNormal(mcp, errcp)
     cphase ~ For(eachindex(mcp, errcp)) do i
         ROSE.CPVonMises(mcp[i], errcp[i])
     end
