@@ -4,7 +4,6 @@ authors = ["ptiede <ptiede91@gmail.com> and contributors"]
 version = "0.1.1"
 
 [deps]
-DiffResults = "163ba53b-c6d8-5494-b064-1a9d43ac40c5"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 HypercubeTransform = "9ec9aee3-0fd3-44c2-8e61-a50acc66f3c8"
 LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
