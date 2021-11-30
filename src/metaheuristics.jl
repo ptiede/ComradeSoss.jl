@@ -8,7 +8,7 @@ end
 function optimize(opt::MetaH, lj::Soss.ConditionalModel)
     tc = ascube(lj)
     lower = transform(tc, zeros(dimension(tc)))
-    upper = transform(tc, ones(dimension(tc)))
+    upper = transform(tc, 0.999*ones(dimension(tc)))
     upflat, _ = ParameterHandling.flatten(upper)
     lowflat, unflatten = ParameterHandling.flatten(lower)
 
