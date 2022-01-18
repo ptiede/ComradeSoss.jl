@@ -25,7 +25,7 @@ function create_joint(model,
                       ) where {F, A<:Comrade.EHTVisibilityAmplitudeDatum}
     uamp = Comrade.getdata(ampobs, :u)
     vamp = Comrade.getdata(ampobs, :v)
-    bl = Comrade.getdata(ampobs, :baselines)
+    bl = Comrade.getdata(ampobs, :baseline)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))
@@ -62,7 +62,7 @@ function create_joint(model,
                       ) where {F, A<:Comrade.EHTVisibilityAmplitudeDatum,P<:Comrade.EHTClosurePhaseDatum}
     uamp = Comrade.getdata(ampobs, :u)
     vamp = Comrade.getdata(ampobs, :v)
-    bl = Comrade.getdata(ampobs, :baselines)
+    bl = Comrade.getdata(ampobs, :baseline)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))
@@ -115,7 +115,7 @@ function create_joint(model,
 
     u = Comrade.getdata(visobs, :u)
     v = Comrade.getdata(visobs, :v)
-    bl = Comrade.getdata(visobs, :baselines)
+    bl = Comrade.getdata(visobs, :baseline)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))
@@ -157,7 +157,7 @@ function create_joint_wnoise(model,
 
     u = Comrade.getdata(visobs, :u)
     v = Comrade.getdata(visobs, :v)
-    bl = Comrade.getdata(visobs, :baselines)
+    bl = Comrade.getdata(visobs, :baseline)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))

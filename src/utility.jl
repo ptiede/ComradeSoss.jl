@@ -28,7 +28,7 @@ function chi2(m, obs::Comrade.EHTObservation{F,V}, gamps, gphase, f=0) where {F,
     visr = Comrade.getdata(obs, :visr)
     visi = Comrade.getdata(obs, :visi)
     error = hypot.(Comrade.getdata(obs, :error), f.*hypot.(visr, visi))
-    bl = Comrade.getdata(obs, :baselines)
+    bl = Comrade.getdata(obs, :baseline)
 
     mvis = Comrade.visibility.(Ref(m), u, v)
 
@@ -66,7 +66,7 @@ function chi2(m,obs::Comrade.EHTObservation{F,D}, gains, args...) where {F,D<:Co
     v = Comrade.getdata(obs, :v)
     amp = Comrade.getdata(obs, :amp)
     error = Comrade.getdata(obs, :error)
-    bl = Comrade.getdata(obs, :baselines)
+    bl = Comrade.getdata(obs, :baseline)
 
     vamp = Comrade.amplitude.(Ref(m), u, v)
 
@@ -137,7 +137,7 @@ function ampres(m, gains, ampobs)
     v = Comrade.getdata(ampobs, :v)
     amp = Comrade.getdata(ampobs, :amp)
     error = Comrade.getdata(ampobs, :error)
-    bl = Comrade.getdata(ampobs, :baselines)
+    bl = Comrade.getdata(ampobs, :baseline)
 
     vamp = Comrade.amplitude.(Ref(m), u, v)
     nres = zeros(length(vamp))
