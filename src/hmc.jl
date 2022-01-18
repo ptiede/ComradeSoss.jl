@@ -4,14 +4,14 @@ export AdHMC
 
 """
     AdHMC
-The interface between ROSESoss and the AdvancedHMC.jl package. To construct this you
+The interface between ComradeSoss and the AdvancedHMC.jl package. To construct this you
 should use the function.
 
 ```
 AdHMC(cm::Soss.ConditionalModel)
 ```
 """
-struct AdHMC{H,P,A,T} <: ROSESoss.AbstractMCMC
+struct AdHMC{H,P,A,T} <: ComradeSoss.AbstractMCMC
     hamiltonian::H
     proposal::P
     adaptor::A

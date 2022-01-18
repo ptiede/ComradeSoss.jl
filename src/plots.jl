@@ -27,14 +27,14 @@ function plot_samples(sims)
 end
 
 function plot_vis_comp(visobs, gamps, gphase, m)
-    u = ROSE.getdata(visobs, :u)
-    v = ROSE.getdata(visobs, :v)
-    visr = ROSE.getdata(visobs, :visr)
-    visi = ROSE.getdata(visobs, :visi)
-    error = ROSE.getdata(visobs, :error)
-    bl = ROSE.getdata(visobs, :baselines)
+    u = Comrade.getdata(visobs, :u)
+    v = Comrade.getdata(visobs, :v)
+    visr = Comrade.getdata(visobs, :visr)
+    visi = Comrade.getdata(visobs, :visi)
+    error = Comrade.getdata(visobs, :error)
+    bl = Comrade.getdata(visobs, :baselines)
 
-    mvis = ROSE.visibility.(Ref(m), u, v)
+    mvis = Comrade.visibility.(Ref(m), u, v)
     for i in eachindex(u)
         s1,s2 = bl[i]
         ga1 = gamps[s1]
@@ -68,13 +68,13 @@ end
 
 
 function plot_amp_comp(ampobs, gains, m)
-    u = ROSE.getdata(ampobs, :u)
-    v = ROSE.getdata(ampobs, :v)
-    amp = ROSE.getdata(ampobs, :amp)
-    error = ROSE.getdata(ampobs, :error)
-    bl = ROSE.getdata(ampobs, :baselines)
+    u = Comrade.getdata(ampobs, :u)
+    v = Comrade.getdata(ampobs, :v)
+    amp = Comrade.getdata(ampobs, :amp)
+    error = Comrade.getdata(ampobs, :error)
+    bl = Comrade.getdata(ampobs, :baselines)
 
-    vamp = ROSE.visibility_amplitude.(Ref(m), u, v)
+    vamp = Comrade.amplitude.(Ref(m), u, v)
     for i in eachindex(u)
         s1,s2 = bl[i]
         g1 = gains[s1]
@@ -96,16 +96,16 @@ function plot_amp_comp(ampobs, gains, m)
 end
 
 function plot_cp_comp(obscp, m)
-    u1 = ROSE.getdata(obscp, :u1)
-    v1 = ROSE.getdata(obscp, :v1)
-    u2 = ROSE.getdata(obscp, :u2)
-    v2 = ROSE.getdata(obscp, :v2)
-    u3 = ROSE.getdata(obscp, :u3)
-    v3 = ROSE.getdata(obscp, :v3)
-    cp = ROSE.getdata(obscp, :phase)
-    error = ROSE.getdata(obscp, :error)
+    u1 = Comrade.getdata(obscp, :u1)
+    v1 = Comrade.getdata(obscp, :v1)
+    u2 = Comrade.getdata(obscp, :u2)
+    v2 = Comrade.getdata(obscp, :v2)
+    u3 = Comrade.getdata(obscp, :u3)
+    v3 = Comrade.getdata(obscp, :v3)
+    cp = Comrade.getdata(obscp, :phase)
+    error = Comrade.getdata(obscp, :error)
 
-    mcp = ROSE.closure_phase.(Ref(m),
+    mcp = Comrade.closure_phase.(Ref(m),
                                u1, v1,
                                u2, v2,
                                u3, v3

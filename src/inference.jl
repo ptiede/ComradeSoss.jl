@@ -1,17 +1,38 @@
+
+using HypercubeTransform
+
+function _split_conditional(lj)
+    tc = Base.invokelatest(HypercubeTransform.ascube, lj)
+    pr = Soss.prune(lj.model, Soss.observed(lj)...)
+    cpr = pr(argvals(lj))
+    base = transform(tc, fill(0.5, dimension(tc)))
+    med, unflatten = ParameterHandling.flatten(base)
+    function lklhd(x::Vector{T}) where {T}
+        θ = unflatten(x)
+        ℓ::T =  logdensity(lj, θ)::T - logdensity(cpr, θ)::T
+        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
+    end
+
+    prt = x->first(ParameterHandling.flatten(transform(tc, x)))
+    return lklhd, prt, tc, unflatten
+end
+
+
+
 function create_joint(model,
-                      ampobs::ROSE.EHTObservation{F,A};
+                      ampobs::Comrade.EHTObservation{F,A};
                       amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1, SP=0.1)
-                      ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum}
-    uamp = ROSE.getdata(ampobs, :u)
-    vamp = ROSE.getdata(ampobs, :v)
-    bl = ROSE.getdata(ampobs, :baselines)
+                      ) where {F, A<:Comrade.EHTVisibilityAmplitudeDatum}
+    uamp = Comrade.getdata(ampobs, :u)
+    vamp = Comrade.getdata(ampobs, :v)
+    bl = Comrade.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))
     gpriors = select(amppriors, st)
     spriors = values(gpriors)
-    erramp = ROSE.getdata(ampobs, :error)
-    amps = ROSE.getdata(ampobs, :amp)
+    erramp = Comrade.getdata(ampobs, :error)
+    amps = Comrade.getdata(ampobs, :amp)
 
 
     joint = va(
@@ -35,30 +56,30 @@ Takes in a model, ampobs, cpobs file and creates a joint distribution.
 Optionally, can fit for the gains. If true the gains are set to unity.
 """
 function create_joint(model,
-                      ampobs::ROSE.EHTObservation{F,A},
-                      cpobs::ROSE.EHTObservation{F,P};
+                      ampobs::Comrade.EHTObservation{F,A},
+                      cpobs::Comrade.EHTObservation{F,P};
                       amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1, SP=0.1)
-                      ) where {F, A<:ROSE.EHTVisibilityAmplitudeDatum,P<:ROSE.EHTClosurePhaseDatum}
-    uamp = ROSE.getdata(ampobs, :u)
-    vamp = ROSE.getdata(ampobs, :v)
-    bl = ROSE.getdata(ampobs, :baselines)
+                      ) where {F, A<:Comrade.EHTVisibilityAmplitudeDatum,P<:Comrade.EHTClosurePhaseDatum}
+    uamp = Comrade.getdata(ampobs, :u)
+    vamp = Comrade.getdata(ampobs, :v)
+    bl = Comrade.getdata(ampobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))
     gpriors = select(amppriors, st)
     spriors = values(gpriors)
     stations = keys(gpriors)
-    erramp = ROSE.getdata(ampobs, :error)
-    amps = ROSE.getdata(ampobs, :amp)
+    erramp = Comrade.getdata(ampobs, :error)
+    amps = Comrade.getdata(ampobs, :amp)
 
-    u1cp = ROSE.getdata(cpobs, :u1)
-    v1cp = ROSE.getdata(cpobs, :v1)
-    u2cp = ROSE.getdata(cpobs, :u2)
-    v2cp = ROSE.getdata(cpobs, :v2)
-    u3cp = ROSE.getdata(cpobs, :u3)
-    v3cp = ROSE.getdata(cpobs, :v3)
-    errcp = ROSE.getdata(cpobs, :error)
-    cps = ROSE.getdata(cpobs, :phase)
+    u1cp = Comrade.getdata(cpobs, :u1)
+    v1cp = Comrade.getdata(cpobs, :v1)
+    u2cp = Comrade.getdata(cpobs, :u2)
+    v2cp = Comrade.getdata(cpobs, :v2)
+    u3cp = Comrade.getdata(cpobs, :u3)
+    v3cp = Comrade.getdata(cpobs, :v3)
+    errcp = Comrade.getdata(cpobs, :error)
+    cps = Comrade.getdata(cpobs, :phase)
 
     joint = vacp(
                   image=model,
@@ -87,25 +108,28 @@ Takes in a model, visobs file and creates a joint distribution.
 Optionally, can fit for the gains. If true the gains are set to unity.
 """
 function create_joint(model,
-                      visobs::ROSE.EHTObservation{F,A};
-                      amppriors=(AA=0.1,AP=0.1,AZ=0.1,LM=0.2,JC=0.1,PV=0.1,SM=0.1, SP=0.1)
-                      ) where {F, A<:ROSE.EHTVisibilityDatum}
+                      visobs::Comrade.EHTObservation{F,A},
+                      amppriors,
+                      phasepriors
+                      ) where {F, A<:Comrade.EHTVisibilityDatum}
 
-    u = ROSE.getdata(visobs, :u)
-    v = ROSE.getdata(visobs, :v)
-    bl = ROSE.getdata(visobs, :baselines)
+    u = Comrade.getdata(visobs, :u)
+    v = Comrade.getdata(visobs, :v)
+    bl = Comrade.getdata(visobs, :baselines)
     s1 = first.(bl)
     s2 = last.(bl)
     st = Tuple(unique(vcat(s1,s2)))
     gpriors = select(amppriors, st)
-    spriors = values(gpriors)
-    err = ROSE.getdata(visobs, :error)
-    visr = ROSE.getdata(visobs, :visr)
-    visi = ROSE.getdata(visobs, :visi)
+    ppriors = select(phasepriors, st)
+    sapriors = values(gpriors)
+    sppriors = values(ppriors)
+    err = Comrade.getdata(visobs, :error)
+    visr = Comrade.getdata(visobs, :visr)
+    visi = Comrade.getdata(visobs, :visi)
 
     joint = vis(image = model,
-                gamps=gamps(spriors=spriors, stations=stations),
-                gphases=gphases(stations=stations),
+                gamps=gamps(spriors=sapriors, stations=st),
+                gphases=gphases(spriors=sppriors, stations=st),
                 u=u,
                 v=v,
                 s1=s1,
@@ -118,12 +142,66 @@ function create_joint(model,
 end
 
 
+"""
+    create_joint
+Takes in a model, visobs file and creates a joint distribution.
+Optionally, can fit for the gains. If true the gains are set to unity.
+"""
+function create_joint_wnoise(model,
+                      visobs::Comrade.EHTObservation{F,A},
+                      amppriors,
+                      phasepriors,
+                      gainamps,
+                      gainphases
+                      ) where {F, A<:Comrade.EHTVisibilityDatum}
+
+    u = Comrade.getdata(visobs, :u)
+    v = Comrade.getdata(visobs, :v)
+    bl = Comrade.getdata(visobs, :baselines)
+    s1 = first.(bl)
+    s2 = last.(bl)
+    st = Tuple(unique(vcat(s1,s2)))
+    gpriors = select(amppriors, st)
+    ppriors = select(phasepriors, st)
+    sapriors = values(gpriors)
+    sppriors = values(ppriors)
+    err = Comrade.getdata(visobs, :error)
+    visr = Comrade.getdata(visobs, :visr)
+    visi = Comrade.getdata(visobs, :visi)
+
+    joint = viswnoise(image = model,
+                gamps=gamps(spriors=sapriors, stations=st),
+                gphases=gphases(spriors=sppriors, stations=st),
+                u=u,
+                v=v,
+                s1=s1,
+                s2=s2,
+                err=err
+                )
+    if gainamps && gainphases
+        conditioned = (visr = visr, visi = visi,)
+    elseif gainamps
+        conditioned = (visr = visr, visi = visi,
+                        gp = (σ = zeros(length(st)-1),),
+                      )
+    elseif gainphases
+        conditioned = (visr = visr, visi = visi,
+                        ga = (σ = ones(length(st)),),
+                      )
+    end
+
+    return joint | conditioned
+end
+
+
+
+
 function create_joint(model,
-                     dlca::ROSE.EHTObservation{F,A},
-                     dcp::ROSE.EHTObservation{F,P};
+                     dlca::Comrade.EHTObservation{F,A},
+                     dcp::Comrade.EHTObservation{F,P};
                      kwargs...) where {F,
-                                       A<:ROSE.EHTLogClosureAmplitudeDatum,
-                                       P<:ROSE.EHTClosurePhaseDatum}
+                                       A<:Comrade.EHTLogClosureAmplitudeDatum,
+                                       P<:Comrade.EHTClosurePhaseDatum}
 
     u1a = getdata(dlca, :u1)
     v1a = getdata(dlca, :v1)
@@ -164,23 +242,6 @@ end
 
 
 
-@inline function _split_conditional(lj)
-    tc = ascube(lj)
-    pr = Soss.prior(lj.model, Soss.observed(lj)...)
-    cpr = pr(argvals(lj))
-    base = transform(tc, fill(0.5, dimension(tc)))
-    med, unflatten = ParameterHandling.flatten(base)
-    function lklhd(x::Vector{T}) where {T}
-        θ = unflatten(x)
-        ℓ::T =  logdensity(lj, θ)::T - logdensity(cpr, θ)::T
-        return convert(T,isnan(ℓ) ? -1e10 : ℓ)
-    end
-
-    prt = x->first(ParameterHandling.flatten(transform(tc, x)))
-    return lklhd, prt, tc, unflatten
-end
-
-
 abstract type AbstractOptimizer end
 
 """
@@ -190,7 +251,7 @@ requires bringing in other packages to load. For example to use
 BlackBoxOptim you would do
 
 ```julia
-using ROSESoss, BlackBoxOptim
+using ComradeSoss, BlackBoxOptim
 
 opt = BBO()
 cm = ... #create log joint

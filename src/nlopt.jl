@@ -5,7 +5,7 @@ import ReverseDiff
 
 export NLoptim
 
-Base.@kwdef struct NLoptim{N,G,T} <: ROSESoss.AbstractOptimizer
+Base.@kwdef struct NLoptim{N,G,T} <: ComradeSoss.AbstractOptimizer
     nlopt::N
     grado::G
     transform::T

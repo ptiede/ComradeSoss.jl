@@ -1,16 +1,16 @@
-using ROSESoss
+using ComradeSoss
 using Documenter
 
-DocMeta.setdocmeta!(ROSESoss, :DocTestSetup, :(using ROSESoss); recursive=true)
+DocMeta.setdocmeta!(ComradeSoss, :DocTestSetup, :(using ComradeSoss); recursive=true)
 
 makedocs(;
-    modules=[ROSESoss],
+    modules=[ComradeSoss],
     authors="ptiede <ptiede91@gmail.com> and contributors",
-    repo="https://github.com/ptiede/ROSESoss.jl/blob/{commit}{path}#{line}",
-    sitename="ROSESoss.jl",
+    repo="https://github.com/ptiede/ComradeSoss.jl/blob/{commit}{path}#{line}",
+    sitename="ComradeSoss.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://ptiede.github.io/ROSESoss.jl",
+        canonical="https://ptiede.github.io/ComradeSoss.jl",
         assets=String[],
     ),
     pages=[
@@ -19,5 +19,5 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/ptiede/ROSESoss.jl",
+    repo="github.com/ptiede/ComradeSoss.jl",
 )

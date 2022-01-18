@@ -1,7 +1,7 @@
 using .BlackBoxOptim: bboptimize, best_candidate, best_fitness
 
 export BBO
-Base.@kwdef struct BBO <: ROSESoss.AbstractOptimizer
+Base.@kwdef struct BBO <: ComradeSoss.AbstractOptimizer
     tracemode::Symbol = :compact
     maxevals::Int = 10_000
 end

@@ -2,7 +2,7 @@ using .UltraNest
 
 export UltraReact
 
-struct UltraReact <: ROSESoss.AbstractNested end
+struct UltraReact <: ComradeSoss.AbstractNested end
 
 """
     dynesty_sampler(logj; nlive=400, kwargs...)
@@ -12,7 +12,7 @@ dynesty on it using the default options and static sampler.
 Returns a chain, state
 """
 function StatsBase.sample(::UltraReact, lj::Soss.ConditionalModel; kwargs...)
-    lklhd, prt, tc, unflatten = ROSESoss._split_conditional(lj)
+    lklhd, prt, tc, unflatten = ComradeSoss._split_conditional(lj)
 
     lklhdvec(X) = lklhd.(eachrow(X))
     vpnames = String["p$i" for i in 1:dimension(tc)]
@@ -34,5 +34,5 @@ function StatsBase.sample(::UltraReact, lj::Soss.ConditionalModel; kwargs...)
     logl = res["logl"][end]
 
     stats = (logz=logz, logzerr=logzerr, logl=logl)
-    return ROSESoss._create_tv(unflatten, samples, weights), stats
+    return ComradeSoss._create_tv(unflatten, samples, weights), stats
 end

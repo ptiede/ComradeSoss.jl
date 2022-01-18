@@ -50,9 +50,9 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using ROSESoss
-            DocMeta.setdocmeta!(ROSESoss, :DocTestSetup, :(using ROSESoss); recursive=true)
-            doctest(ROSESoss)'
+            using ComradeSoss
+            DocMeta.setdocmeta!(ComradeSoss, :DocTestSetup, :(using ComradeSoss); recursive=true)
+            doctest(ComradeSoss)'
       - run: julia --project=docs docs/make.jl
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
