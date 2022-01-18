@@ -23,8 +23,8 @@ You can optionally pass a named tuple with the best fit gain amplitudes and phas
 if you fit those and they'll be applied if applicable
 """
 function chi2(m, obs::Comrade.EHTObservation{F,V}, gamps, gphase, f=0) where {F,V<:Comrade.EHTVisibilityDatum}
-    u = Comrade.getdata(obs, :u)
-    v = Comrade.getdata(obs, :v)
+    u = μas2rad.(Comrade.getdata(obs, :u))
+    v = μas2rad.(Comrade.getdata(obs, :v))
     visr = Comrade.getdata(obs, :visr)
     visi = Comrade.getdata(obs, :visi)
     error = hypot.(Comrade.getdata(obs, :error), f.*hypot.(visr, visi))
@@ -62,8 +62,8 @@ You can optionally pass a named tuple with the best fit gain amplitudes and phas
 if you fit those.
 """
 function chi2(m,obs::Comrade.EHTObservation{F,D}, gains, args...) where {F,D<:Comrade.EHTVisibilityAmplitudeDatum}
-    u = Comrade.getdata(obs, :u)
-    v = Comrade.getdata(obs, :v)
+    u = μas2rad.(Comrade.getdata(obs, :u))
+    v = μas2rad.(Comrade.getdata(obs, :v))
     amp = Comrade.getdata(obs, :amp)
     error = Comrade.getdata(obs, :error)
     bl = Comrade.getdata(obs, :baseline)
@@ -81,12 +81,12 @@ function chi2(m,obs::Comrade.EHTObservation{F,D}, gains, args...) where {F,D<:Co
 end
 
 function chi2(m,obs::Comrade.EHTObservation{F,D}, args...) where {F,D<:Comrade.EHTClosurePhaseDatum}
-    u1 = Comrade.getdata(obs, :u1)
-    v1 = Comrade.getdata(obs, :v1)
-    u2 = Comrade.getdata(obs, :u2)
-    v2 = Comrade.getdata(obs, :v2)
-    u3 = Comrade.getdata(obs, :u3)
-    v3 = Comrade.getdata(obs, :v3)
+    u1 = μas2rad.(Comrade.getdata(obs, :u1))
+    v1 = μas2rad.(Comrade.getdata(obs, :v1))
+    u2 = μas2rad.(Comrade.getdata(obs, :u2))
+    v2 = μas2rad.(Comrade.getdata(obs, :v2))
+    u3 = μas2rad.(Comrade.getdata(obs, :u3))
+    v3 = μas2rad.(Comrade.getdata(obs, :v3))
     cp = Comrade.getdata(obs, :phase)
     error = Comrade.getdata(obs, :error)
 
@@ -105,13 +105,13 @@ function chi2(m,obs::Comrade.EHTObservation{F,D}, args...) where {F,D<:Comrade.E
 end
 
 function chi2(m,obs::Comrade.EHTObservation{F,D}, args...) where {F,D<:Comrade.EHTLogClosureAmplitudeDatum}
-    u1 = getdata(obs, :u1)
-    v1 = getdata(obs, :v1)
-    u2 = getdata(obs, :u2)
-    v2 = getdata(obs, :v2)
-    u3 = getdata(obs, :u3)
-    v3 = getdata(obs, :v3)
-    u4 = getdata(obs, :u4)
+    u1 = μas2rad.(getdata(obs, :u1))
+    v1 = μas2rad.(getdata(obs, :v1))
+    u2 = μas2rad.(getdata(obs, :u2))
+    v2 = μas2rad.(getdata(obs, :v2))
+    u3 = μas2rad.(getdata(obs, :u3))
+    v3 = μas2rad.(getdata(obs, :v3))
+    u4 = μas2rad.(getdata(obs, :u4))
     v4 = getdata(obs, :v4)
     lcamp = getdata(obs, :amp)
     error = getdata(obs, :error)
@@ -133,8 +133,8 @@ end
 
 
 function ampres(m, gains, ampobs)
-    u = Comrade.getdata(ampobs, :u)
-    v = Comrade.getdata(ampobs, :v)
+    u = μas2rad.(Comrade.getdata(ampobs, :u))
+    v = μas2rad.(Comrade.getdata(ampobs, :v))
     amp = Comrade.getdata(ampobs, :amp)
     error = Comrade.getdata(ampobs, :error)
     bl = Comrade.getdata(ampobs, :baseline)
@@ -152,12 +152,12 @@ function ampres(m, gains, ampobs)
 end
 
 function cpres(m, obscp)
-    u1 = Comrade.getdata(obscp, :u1)
-    v1 = Comrade.getdata(obscp, :v1)
-    u2 = Comrade.getdata(obscp, :u2)
-    v2 = Comrade.getdata(obscp, :v2)
-    u3 = Comrade.getdata(obscp, :u3)
-    v3 = Comrade.getdata(obscp, :v3)
+    u1 = μas2rad.(Comrade.getdata(obscp, :u1))
+    v1 = μas2rad.(Comrade.getdata(obscp, :v1))
+    u2 = μas2rad.(Comrade.getdata(obscp, :u2))
+    v2 = μas2rad.(Comrade.getdata(obscp, :v2))
+    u3 = μas2rad.(Comrade.getdata(obscp, :u3))
+    v3 = μas2rad.(Comrade.getdata(obscp, :v3))
     cp = Comrade.getdata(obscp, :phase)
     error = Comrade.getdata(obscp, :error)
 
