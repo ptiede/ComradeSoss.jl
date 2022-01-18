@@ -230,9 +230,9 @@ function create_joint(model,
               u3a=μas2rad(u3a),v3a=μas2rad(v3a),
               u4a=μas2rad(u4a),v4a=μas2rad(v4a),
               errcamp=errcamp,
-              u1cp=u1cp,v1cp=v1cp,
-              u2cp=u2cp,v2cp=v2cp,
-              u3cp=u3cp,v3cp=v3cp,
+              u1cp= μas2rad(u1cp),v1cp= μas2rad(v1cp),
+              u2cp= μas2rad(u2cp),v2cp= μas2rad(v2cp),
+              u3cp= μas2rad(u3cp),v3cp= μas2rad(v3cp),
               errcp=errcp
         )
 
