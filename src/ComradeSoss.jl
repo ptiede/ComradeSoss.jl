@@ -35,8 +35,7 @@ const rad2μas = 180.0/π*3600*1e6
 const dynesty = PyNULL()
 
 
-export extract_amps, extract_vis, extract_cphase,
-       ObsChar, scandata,
+export ObsChar, scandata,
        create_joint,
        DynestyStatic,
        sample, optimize,
