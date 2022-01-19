@@ -4,6 +4,7 @@ authors = ["ptiede <ptiede91@gmail.com> and contributors"]
 version = "0.1.1"
 
 [deps]
+Comrade = "99d987ce-9a1e-4df8-bc0b-1ea019aa547b"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 HypercubeTransform = "9ec9aee3-0fd3-44c2-8e61-a50acc66f3c8"
 LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
@@ -14,7 +15,6 @@ NamedTupleTools = "d9ec5142-1e00-5aa0-9d6a-321866360f50"
 NestedTuples = "a734d2a7-8d68-409b-9419-626914d4061d"
 ParameterHandling = "2412ca09-6db7-441c-8e3a-88d5709968c5"
 PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
-Comrade = "99d987ce-9a1e-4df8-bc0b-1ea019aa547b"
 Random = "9a3f8284-a2c9-5f02-9a11-845980a1fd5c"
 Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
@@ -25,6 +25,7 @@ TransformVariables = "84d833dd-6860-57f9-a1a7-6da5db126cff"
 TupleVectors = "615932cf-77b6-4358-adcd-5b7eba981d7e"
 
 [compat]
+Comrade = "0.1"
 Distributions = "0.22 - 0.26"
 MeasureTheory = "0.10,0.11,0.12,0.13"
 PyCall = "1"
