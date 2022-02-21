@@ -43,7 +43,7 @@ export ObsChar, scandata,
        chi2, ehtim
 
 
-include("ehtim.jl")
+#include("ehtim.jl")
 include("utility.jl")
 include("hypercube.jl")
 include("inference.jl")

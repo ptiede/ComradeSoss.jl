@@ -1,6 +1,6 @@
-using ROSESoss
+using ComradeSoss
 using Test
 
-@testset "ROSESoss.jl" begin
+@testset "ComradeSoss.jl" begin
     # Write your tests here.
 end
