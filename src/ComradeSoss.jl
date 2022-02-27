@@ -1,11 +1,11 @@
-module ROSESoss
+module ComradeSoss
 #Turn off precompilations because of GG bug https://github.com/cscherrer/Soss.jl/issues/267
 __precompile__(false)
 using HypercubeTransform
 
 using Reexport
 @reexport using Soss
-@reexport using ROSE
+@reexport using Comrade
 
 import Distributions
 const Dists = Distributions
@@ -33,11 +33,9 @@ const rad2μas = 180.0/π*3600*1e6
 #These hold the pointers to the PyObjects that will store dynesty and ehtim
 #and are loaded at initialization
 const dynesty = PyNULL()
-const ehtim  = PyNULL()
 
 
-export extract_amps, extract_vis, extract_cphase,
-       ObsChar, scandata,
+export ObsChar, scandata,
        create_joint,
        DynestyStatic,
        sample, optimize,
@@ -45,19 +43,19 @@ export extract_amps, extract_vis, extract_cphase,
        chi2, ehtim
 
 
-include("ehtim.jl")
+#include("ehtim.jl")
 include("utility.jl")
 include("hypercube.jl")
 include("inference.jl")
+include("dists.jl")
 include("models.jl")
-include("grads.jl")
-include("nlopt.jl")
-include("hmc.jl")
+#include("grads.jl")
+#include("nlopt.jl")
+#include("hmc.jl")
 
 
 function __init__()
     copy!(dynesty, pyimport("dynesty"))
-    copy!(ehtim, pyimport("ehtim"))
     @require UltraNest="6822f173-b0be-4018-9ee2-28bf56348d09" include("ultranest.jl")
     @require NestedSamplers="41ceaf6f-1696-4a54-9b49-2e7a9ec3782e" include("nested.jl")
     @require BlackBoxOptim="a134a8b2-14d6-55f6-9291-3336d3ab0209" include("bboptim.jl")
@@ -65,4 +63,4 @@ function __init__()
 end
 
 
-end #end ROSESoss
+end #end ComradeSoss

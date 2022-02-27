@@ -1,7 +1,7 @@
 using .BlackBoxOptim: bboptimize, best_candidate, best_fitness
 
 export BBO
-Base.@kwdef struct BBO <: ROSESoss.AbstractOptimizer
+Base.@kwdef struct BBO <: ComradeSoss.AbstractOptimizer
     tracemode::Symbol = :compact
     maxevals::Int = 10_000
 end
@@ -9,7 +9,7 @@ end
 function optimize(opt::BBO, lj::Soss.ConditionalModel)
     tc = ascube(lj)
     lower = transform(tc, zeros(dimension(tc)))
-    upper = transform(tc, ones(dimension(tc)))
+    upper = transform(tc, 0.999*ones(dimension(tc)))
 
     upflat, _ = ParameterHandling.flatten(upper)
     lowflat, unflatten = ParameterHandling.flatten(lower)

@@ -3,7 +3,7 @@
 const fwhmfac = 2*sqrt(2*log(2))
 
 using Soss
-using ROSE
+using Comrade
 using MeasureTheory
 import Distributions
 const Dists = Distributions
@@ -14,16 +14,20 @@ gamps = @model stations, spriors begin
     σ ~ For(eachindex(spriors)) do i
         Dists.LogNormal(zero(spriors[i]), spriors[i])
     end
-    return NamedTuple{stations}(σ)
+    g = NamedTuple{stations}(σ)
+    return g
 end
 
-gphases = @model stations begin
-    σ ~ Dists.truncated(Dists.Normal(0.0, π), -π, π) |> iid(length(stations))
-    return NamedTuple{stations}(σ)
+gphases = @model stations, spriors begin
+    σ ~ For(2:(length(spriors))) do i
+            Dists.truncated(Dists.Normal(zero(spriors[i]), spriors[i]), -π, π)
+        end
+    g = NamedTuple{stations}(((zero(eltype(σ)),)..., σ...))
+    return g
 end
 
 function amp_gains(img, g1,g2, u, v)
-    return g1*g2*ROSE.visibility_amplitude(img, u, v)
+    return g1*g2*Comrade.amplitude(img, u, v)
 end
 
 function _vamps(img, g, s1, s2, uamp, vamp)
@@ -55,7 +59,7 @@ vacp = @model image, gamps, uamp, vamp, s1, s2, erramp,
     vm = _vamps(img, g, s1, s2, uamp, vamp)
     amp ~ Dists.MvNormal(vm, erramp)
 
-    cp = ROSE.closure_phase.(Ref(img),
+    cp = Comrade.closure_phase.(Ref(img),
                             u1cp,
                             v1cp,
                             u2cp,
@@ -63,9 +67,10 @@ vacp = @model image, gamps, uamp, vamp, s1, s2, erramp,
                             u3cp,
                             v3cp)
 
-    cphase ~ For(eachindex(cp)) do i
-        ROSE.CPVonMises(cp[i], errcp[i])
-    end
+    cphase ~ Comrade.CPVonMises{(:μ,:σ)}(mcp, errcp)
+                            #For(eachindex(cp)) do i
+    #    Comrade.CPVonMises(cp[i], errcp[i])
+    #end
 
 end
 
@@ -108,32 +113,44 @@ vis = @model image, gamps, gphases, u, v, s1, s2, error begin
 
 end
 
+viswnoise = @model image, gamps, gphases, u, v, s1, s2, error begin
+    img ~ image
+    ga ~ gamps
+    gp ~ gphases
+    f ~ Dists.Uniform(0.0, 0.25)
+    vis = _vism(img, ga, gp, s1, s2, u, v)
+    vamps = abs.(vis)
+    errwnoise = hypot.(err, f.*vamps)
+    visr ~ Dists.MvNormal(real.(vis), errwnoise)
+    visi ~ Dists.MvNormal(imag.(vis), errwnoise)
+end
+
+
 
 lcacp = @model image,
                u1a,v1a,u2a,v2a,u3a,v3a,u4a,v4a,errcamp,
                u1p,v1p,u2p,v2p,u3p,v3p,errcp begin
     img ~ image
 
-    mlca = ROSE.logclosure_amplitude.(Ref(img), u1a, v1a,
+    mlca = Comrade.logclosure_amplitude.(Ref(img), u1a, v1a,
                                                u2a, v2a,
                                                u3a, v3a,
                                                u4a, v4a,
                                     )
-    lcamp ~ For(eachindex(mlca,errcamp)) do i
-        Dists.Normal(mlca[i], errcamp[i])
-    end
+    lcamp ~ Dists.MvNormal(mlca, errcamp)
+    #For(eachindex(mlca,errcamp)) do i
+    #    Dists.Normal(mlca[i], errcamp[i])
+    #end
 
-    mcp = ROSE.closure_phase.(Ref(img),
+    mcp = Comrade.closure_phase.(Ref(img),
                              u1cp,
                              v1cp,
                              u2cp,
                              v2cp,
                              u3cp,
                              v3cp)
-
-    cphase ~ For(eachindex(mcp, errcp)) do i
-        ROSE.CPVonMises(mcp[i], errcp[i])
-    end
+    #cphase ~ Dists.MvNormal(mcp, errcp)
+    cphase ~ Comrade.CPVonMises{(:μ,:σ)}(mcp, errcp)
 end
 
 #=
@@ -151,12 +168,12 @@ mringwb = @model N, M, fov begin
     #Fraction of floor flux
     floor ~ Dists.Uniform(0.0, 1.0)
     f ~ Dists.Uniform(0.8, 1.2)
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f-f*floor)
+    mring = renormed(Comrade.MRing{N}(rad, α, β), f-f*floor)
     rimg = smoothed(mring,σ)
 
     coeff ~ Dists.Dirichlet(fill(M*M, 1.0))
     ϵ ~ Dists.LogNormal(0.0, 0.1)
-    bimg = renormed(stretched(ROSE.RImage(coeff, ROSE.SqExpKernel(ϵ)),fov,fov), f*floor)
+    bimg = renormed(stretched(Comrade.RImage(coeff, Comrade.SqExpKernel(ϵ)),fov,fov), f*floor)
     img = rimg+bimg
     return img
 end
@@ -173,7 +190,7 @@ mring = @model N, fmin, fmax begin
     β = ma.*sin.(mp)
 
     f ~ Dists.Uniform(fmin, fmax)
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f)
+    mring = renormed(Comrade.MRing{N}(rad, α, β), f)
     img = smoothed(mring,σ)
     return img
 end
@@ -193,8 +210,8 @@ mringwfloor = @model N, fmin, fmax begin
     floor ~ Dists.Uniform(0.0, 1.0)
     f ~ Dists.Uniform(fmin, fmax)
 
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
-    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
+    mring = renormed(Comrade.MRing{N}(rad, α, β), f*(1-floor))
+    disk = renormed(stretched(Comrade.Disk(), rad, rad), f*floor)
     img = smoothed(mring+disk,σ)
     return img
 end
@@ -215,8 +232,8 @@ mringwffloor = @model N, fmin, fmax begin
     f ~ Dists.Uniform(fmin, fmax)
     σf ~ Dists.Uniform(1.0, 40.0)
 
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
-    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
+    mring = renormed(Comrade.MRing{N}(rad, α, β), f*(1-floor))
+    disk = renormed(stretched(Comrade.Disk(), rad, rad), f*floor)
     img = smoothed(mring, σ) +smoothed(disk,σf)
     return img
 end
@@ -237,8 +254,8 @@ mringwgfloor = @model N, fmin, fmax begin
     f ~ Dists.Uniform(fmin, fmax)
     dg ~ Dists.Uniform(40.0, 250.0)
     rg = dg/fwhmfac
-    mring = smoothed(renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor)), σ)
-    g = renormed(stretched(ROSE.Gaussian(), rg, rg), f*floor)
+    mring = smoothed(renormed(Comrade.MRing{N}(rad, α, β), f*(1-floor)), σ)
+    g = renormed(stretched(Comrade.Gaussian(), rg, rg), f*floor)
     img = mring + g
     return img
 end
@@ -263,7 +280,7 @@ smring = @model N, fmin, fmax begin
 
     f ~ Dists.Uniform(fmin, fmax)
 
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f)
+    mring = renormed(Comrade.MRing{N}(rad, α, β), f)
     img = smoothed(rotated(stretched(mring,scx,scy),ξτ),σ)
     return img
 end
@@ -291,8 +308,8 @@ smringwfloor = @model N, fmin, fmax begin
     floor ~ Dists.Uniform(0.0, 1.0)
     f ~ Dists.Uniform(fmin, fmax)
 
-    mring = renormed(ROSE.MRing{N}(rad, α, β), f*(1-floor))
-    disk = renormed(stretched(ROSE.Disk(), rad, rad), f*floor)
+    mring = renormed(Comrade.MRing{N}(rad, α, β), f*(1-floor))
+    disk = renormed(stretched(Comrade.Disk(), rad, rad), f*floor)
     img = smoothed(rotated(stretched(mring+disk,scx,scy),ξτ),σ)
     return img
 end

@@ -8,10 +8,11 @@ import MeasureTheory
 const MT = MeasureTheory
 import Distributions
 const Dists = Distributions
-
+import HypercubeTransform
 
 
 HypercubeTransform.ascube(m::ConditionalModel{A, B}, _data::NamedTuple) where {A,B} = HypercubeTransform.ascube(m | _data)
+#HypercubeTransform.ascube(::NamedTuple{(), Tuple{}}, _data) = nothing
 
 function HypercubeTransform.ascube(m::ConditionalModel{A, B}) where {A,B}
     return _ascube(getmoduletypencoding(m), Model(m), argvals(m), observations(m))
@@ -27,7 +28,7 @@ HypercubeTransform.ascube(μ::MT.AbstractMeasure,  _data::NamedTuple=NamedTuple(
 HypercubeTransform.ascube(μ::Dists.Distribution,  _data::NamedTuple=NamedTuple()) = HypercubeTransform.ascube(μ)
 
 HypercubeTransform.ascube(d::Dists.AbstractMvNormal, _data::NamedTuple=NamedTuple()) = HypercubeTransform.ascube(d)
-#ascube(::NamedTuple{(), Tuple{}}) = nothing
+HypercubeTransform.ascube(::NamedTuple{(), Tuple{}}) = nothing
 
 
 
