@@ -102,7 +102,7 @@ uuid = "de0858da-6303-5e67-8744-51eddeeeb8d7"
 deps = ["InteractiveUtils", "Markdown", "Sockets", "Unicode"]
 uuid = "3fa0cd96-eef1-5676-8a61-b3b8758bbffb"
 
-[[ROSESoss]]
+[[ComradeSoss]]
 path = ".."
 uuid = "b453e4c4-4bcd-41c2-b157-cea5ea685e94"
 version = "0.1.0"

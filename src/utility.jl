@@ -5,32 +5,32 @@ Makes images using params. The params must be a vector of NamedTuples or
 something of the same nature.
 """
 function make_mean(model, params; fov=160.0, npix=256)
-    ims = ROSE.StokesImage(zeros(npix,npix), fov, fov)
+    ims = Comrade.StokesImage(zeros(npix,npix), fov, fov)
     for p in params
         m = Soss.predict(model, p)[:img]
-        ims += ROSE.intensitymap(m, npix, npix, fov, fov)
+        ims += Comrade.intensitymap(m, npix, npix, fov, fov)
     end
     return ims/length(params)
 end
 
 
 """
-    chi2vis(m::ROSE.AbstractModel, obs::ROSE.EHTObservation; kwargs...)
+    chi2vis(m::Comrade.AbstractModel, obs::Comrade.EHTObservation; kwargs...)
 Computes the  chi square for the model given the data. The model
-must be a ROSE model object, and obs is a EHTObservation file.
+must be a Comrade model object, and obs is a EHTObservation file.
 
 You can optionally pass a named tuple with the best fit gain amplitudes and phases
 if you fit those and they'll be applied if applicable
 """
-function chi2(m, obs::ROSE.EHTObservation{F,V}, gamps, gphase) where {F,V<:ROSE.EHTVisibilityDatum}
-    u = ROSE.getdata(obs, :u)
-    v = ROSE.getdata(obs, :v)
-    visr = ROSE.getdata(obs, :visr)
-    visi = ROSE.getdata(obs, :visi)
-    error = ROSE.getdata(obs, :error)
-    bl = ROSE.getdata(obs, :baselines)
+function chi2(m, obs::Comrade.EHTObservation{F,V}, gamps, gphase, f=0) where {F,V<:Comrade.EHTVisibilityDatum}
+    u = μas2rad.(Comrade.getdata(obs, :u))
+    v = μas2rad.(Comrade.getdata(obs, :v))
+    visr = Comrade.getdata(obs, :visr)
+    visi = Comrade.getdata(obs, :visi)
+    error = hypot.(Comrade.getdata(obs, :error), f.*hypot.(visr, visi))
+    bl = Comrade.getdata(obs, :baseline)
 
-    mvis = ROSE.visibility.(Ref(m), u, v)
+    mvis = Comrade.visibility.(Ref(m), u, v)
 
     chi2 = 0.0
     ga1 = 1
@@ -54,21 +54,21 @@ end
 
 
 """
-    chi2vis(m::ROSE.AbstractModel, obs::ROSE.EHTObservation; gamps=nothing, gphase=nothing)
+    chi2vis(m::Comrade.AbstractModel, obs::Comrade.EHTObservation; gamps=nothing, gphase=nothing)
 Computes the complex chi square for the model given the data. The model
-must be a ROSE model object, and obs is a EHTObservation file.
+must be a Comrade model object, and obs is a EHTObservation file.
 
 You can optionally pass a named tuple with the best fit gain amplitudes and phases
 if you fit those.
 """
-function chi2(m,obs::ROSE.EHTObservation{F,D}, gains, args...) where {F,D<:ROSE.EHTVisibilityAmplitudeDatum}
-    u = ROSE.getdata(obs, :u)
-    v = ROSE.getdata(obs, :v)
-    amp = ROSE.getdata(obs, :amp)
-    error = ROSE.getdata(obs, :error)
-    bl = ROSE.getdata(obs, :baselines)
+function chi2(m,obs::Comrade.EHTObservation{F,D}, gains, args...) where {F,D<:Comrade.EHTVisibilityAmplitudeDatum}
+    u = μas2rad.(Comrade.getdata(obs, :u))
+    v = μas2rad.(Comrade.getdata(obs, :v))
+    amp = Comrade.getdata(obs, :amp)
+    error = Comrade.getdata(obs, :error)
+    bl = Comrade.getdata(obs, :baseline)
 
-    vamp = ROSE.visibility_amplitude.(Ref(m), u, v)
+    vamp = Comrade.amplitude.(Ref(m), u, v)
 
     chi2 = 0.0
     for i in eachindex(u)
@@ -80,17 +80,17 @@ function chi2(m,obs::ROSE.EHTObservation{F,D}, gains, args...) where {F,D<:ROSE.
     return chi2
 end
 
-function chi2(m,obs::ROSE.EHTObservation{F,D}, args...) where {F,D<:ROSE.EHTClosurePhaseDatum}
-    u1 = ROSE.getdata(obs, :u1)
-    v1 = ROSE.getdata(obs, :v1)
-    u2 = ROSE.getdata(obs, :u2)
-    v2 = ROSE.getdata(obs, :v2)
-    u3 = ROSE.getdata(obs, :u3)
-    v3 = ROSE.getdata(obs, :v3)
-    cp = ROSE.getdata(obs, :phase)
-    error = ROSE.getdata(obs, :error)
+function chi2(m,obs::Comrade.EHTObservation{F,D}, args...) where {F,D<:Comrade.EHTClosurePhaseDatum}
+    u1 = μas2rad.(Comrade.getdata(obs, :u1))
+    v1 = μas2rad.(Comrade.getdata(obs, :v1))
+    u2 = μas2rad.(Comrade.getdata(obs, :u2))
+    v2 = μas2rad.(Comrade.getdata(obs, :v2))
+    u3 = μas2rad.(Comrade.getdata(obs, :u3))
+    v3 = μas2rad.(Comrade.getdata(obs, :v3))
+    cp = Comrade.getdata(obs, :phase)
+    error = Comrade.getdata(obs, :error)
 
-    mcp = ROSE.closure_phase.(Ref(m),
+    mcp = Comrade.closure_phase.(Ref(m),
                                u1, v1,
                                u2, v2,
                                u3, v3
@@ -104,19 +104,19 @@ function chi2(m,obs::ROSE.EHTObservation{F,D}, args...) where {F,D<:ROSE.EHTClos
     return chi2
 end
 
-function chi2(m,obs::ROSE.EHTObservation{F,D}, args...) where {F,D<:ROSE.EHTLogClosureAmplitudeDatum}
-    u1 = getdata(obs, :u1)
-    v1 = getdata(obs, :v1)
-    u2 = getdata(obs, :u2)
-    v2 = getdata(obs, :v2)
-    u3 = getdata(obs, :u3)
-    v3 = getdata(obs, :v3)
-    u4 = getdata(obs, :u4)
+function chi2(m,obs::Comrade.EHTObservation{F,D}, args...) where {F,D<:Comrade.EHTLogClosureAmplitudeDatum}
+    u1 = μas2rad.(getdata(obs, :u1))
+    v1 = μas2rad.(getdata(obs, :v1))
+    u2 = μas2rad.(getdata(obs, :u2))
+    v2 = μas2rad.(getdata(obs, :v2))
+    u3 = μas2rad.(getdata(obs, :u3))
+    v3 = μas2rad.(getdata(obs, :v3))
+    u4 = μas2rad.(getdata(obs, :u4))
     v4 = getdata(obs, :v4)
     lcamp = getdata(obs, :amp)
     error = getdata(obs, :error)
 
-    mlcamp = ROSE.logclosure_amplitude.(Ref(m),
+    mlcamp = Comrade.logclosure_amplitude.(Ref(m),
                                u1, v1,
                                u2, v2,
                                u3, v3,
@@ -133,13 +133,13 @@ end
 
 
 function ampres(m, gains, ampobs)
-    u = ROSE.getdata(ampobs, :u)
-    v = ROSE.getdata(ampobs, :v)
-    amp = ROSE.getdata(ampobs, :amp)
-    error = ROSE.getdata(ampobs, :error)
-    bl = ROSE.getdata(ampobs, :baselines)
+    u = μas2rad.(Comrade.getdata(ampobs, :u))
+    v = μas2rad.(Comrade.getdata(ampobs, :v))
+    amp = Comrade.getdata(ampobs, :amp)
+    error = Comrade.getdata(ampobs, :error)
+    bl = Comrade.getdata(ampobs, :baseline)
 
-    vamp = ROSE.visibility_amplitude.(Ref(m), u, v)
+    vamp = Comrade.amplitude.(Ref(m), u, v)
     nres = zeros(length(vamp))
     for i in eachindex(u)
         s1,s2 = bl[i]
@@ -152,16 +152,16 @@ function ampres(m, gains, ampobs)
 end
 
 function cpres(m, obscp)
-    u1 = ROSE.getdata(obscp, :u1)
-    v1 = ROSE.getdata(obscp, :v1)
-    u2 = ROSE.getdata(obscp, :u2)
-    v2 = ROSE.getdata(obscp, :v2)
-    u3 = ROSE.getdata(obscp, :u3)
-    v3 = ROSE.getdata(obscp, :v3)
-    cp = ROSE.getdata(obscp, :phase)
-    error = ROSE.getdata(obscp, :error)
+    u1 = μas2rad.(Comrade.getdata(obscp, :u1))
+    v1 = μas2rad.(Comrade.getdata(obscp, :v1))
+    u2 = μas2rad.(Comrade.getdata(obscp, :u2))
+    v2 = μas2rad.(Comrade.getdata(obscp, :v2))
+    u3 = μas2rad.(Comrade.getdata(obscp, :u3))
+    v3 = μas2rad.(Comrade.getdata(obscp, :v3))
+    cp = Comrade.getdata(obscp, :phase)
+    error = Comrade.getdata(obscp, :error)
 
-    mcp = ROSE.closure_phase.(Ref(m),
+    mcp = Comrade.closure_phase.(Ref(m),
                                u1, v1,
                                u2, v2,
                                u3, v3
